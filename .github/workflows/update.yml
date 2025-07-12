@@ -2,8 +2,7 @@ name: Update RSS
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # 毎10分に実行
-  workflow_dispatch:
+    - cron: "*/10 * * * *"
 
 jobs:
   build:
@@ -14,12 +13,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.10"
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Generate RSS
+      - name: Run RSS generator
         run: python generate_rss.py
 
       - name: Commit and push
