@@ -1,10 +1,11 @@
 import feedparser
 import html
 import re
-from datetime import datetime
-from operator import itemgetter
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
+from operator import itemgetter
+import xml.etree.ElementTree as ET
 
 RSS_FEEDS = [
     "http://himasoku.com/index.rdf",
@@ -19,29 +20,24 @@ RSS_FEEDS = [
     "https://www.gizmodo.jp/atom.xml"
 ]
 
-def extract_image(desc_html):
-    match = re.search(r'<img[^>]+(?:src|data-src)=["\']([^"\']+)["\']', desc_html)
-    return match.group(1) if match else ""
-
 def fetch_og_image(url):
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
-        html_doc = requests.get(url, headers=headers, timeout=5).text
-        soup = BeautifulSoup(html_doc, "html.parser")
-        meta = soup.find("meta", property="og:image")
-        if meta and meta.get("content"):
-            return meta["content"]
-        img = soup.find("img")
-        if img and img.get("src"):
-            return img["src"]
-    except Exception as e:
-        print(f"Failed to fetch og:image from {url}: {e}")
-    return ""
+        res = requests.get(url, timeout=5, headers=headers)
+        soup = BeautifulSoup(res.content, "html.parser")
+        og = soup.find("meta", property="og:image")
+        return og["content"] if og and og.get("content") else ""
+    except:
+        return ""
+
+def extract_image(html_content):
+    match = re.search(r'<img[^>]+src="([^"]+)"', html_content)
+    return match.group(1) if match else ""
 
 def fetch_and_generate():
     items = []
     for url in RSS_FEEDS:
-        feed = feedparser.parse(url)
+        feed = feedparser.parse(url, request_headers={"Cache-Control": "no-cache"})
         site_title = feed.feed.get("title", "")
         for e in feed.entries:
             try:
@@ -70,25 +66,26 @@ def fetch_and_generate():
     items.sort(key=itemgetter("pubDate"), reverse=True)
     return items[:100]
 
-def save_rss():
-    items = fetch_and_generate()
-    body = ""
-    for i in items:
-        body += f"""<item>
-<title>{html.escape(i['title'])}</title>
-<link>{html.escape(i['link'])}</link>
-<description><![CDATA[{i['description']}]]></description>
-<pubDate>{i['pubDate'].strftime('%a, %d %b %Y %H:%M:%S +0000')}</pubDate>
-<content:encoded><![CDATA[{i['content']}]]></content:encoded>
-</item>\n"""
-    rss = f"""<?xml version='1.0' encoding='UTF-8'?>
-<rss version='2.0' xmlns:content="http://purl.org/rss/1.0/modules/content/">
-<channel>
-<title>Merged RSS</title>
-{body}
-</channel>
-</rss>"""
-    with open("rss_output.xml", "w", encoding="utf-8") as f:
-        f.write(rss)
+def generate_rss(items):
+    rss = ET.Element("rss", version="2.0", attrib={
+        "xmlns:content": "http://purl.org/rss/1.0/modules/content/"
+    })
+    channel = ET.SubElement(rss, "channel")
+    ET.SubElement(channel, "title").text = "Merged RSS Feed"
+    ET.SubElement(channel, "link").text = "https://example.com"
+    ET.SubElement(channel, "description").text = "A combined feed"
 
-save_rss()
+    for item in items:
+        i = ET.SubElement(channel, "item")
+        ET.SubElement(i, "title").text = item["title"]
+        ET.SubElement(i, "link").text = item["link"]
+        ET.SubElement(i, "description").text = item["description"]
+        ET.SubElement(i, "pubDate").text = item["pubDate"].strftime("%a, %d %b %Y %H:%M:%S +0000")
+        content = ET.SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded")
+        content.text = ET.CDATA(item["content"])
+
+    tree = ET.ElementTree(rss)
+    tree.write("rss_output.xml", encoding="utf-8", xml_declaration=True)
+
+if __name__ == "__main__":
+    generate_rss(fetch_and_generate())
