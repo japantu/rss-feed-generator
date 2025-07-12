@@ -26,6 +26,7 @@ jobs:
         run: |
           git config --global user.name "rss-bot"
           git config --global user.email "rss@example.com"
+          git remote set-url origin https://x-access-token:${{ secrets.ACCESS_TOKEN }}@github.com/${{ github.repository }}
           git add rss_output.xml
           git commit -m "Auto update RSS" || echo "No changes"
           git push
