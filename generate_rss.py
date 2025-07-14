@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import html
 from xml.etree.ElementTree import Element, SubElement, ElementTree, register_namespace
 
-# ✅ content:encoded を正しく出力させるための命名空間登録
+# ✅ 重複しないように名前空間はここでだけ定義
 register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
 
 RSS_URLS = [
@@ -40,13 +40,11 @@ def fetch_and_generate():
             raw_desc = html.unescape(raw_desc)
 
             thumb = ""
-            html_source = ""
             for fld in ("content:encoded", "content", "summary", "description"):
                 v = e.get(fld)
                 if isinstance(v, list):
                     v = v[0]
                 if isinstance(v, str):
-                    html_source = v
                     soup = BeautifulSoup(v, "html.parser")
                     img = soup.find("img")
                     if img and img.get("src"):
@@ -71,9 +69,8 @@ def fetch_and_generate():
     return items[:200]
 
 def generate_rss(items):
-    rss = Element("rss", version="2.0", attrib={
-        "xmlns:content": "http://purl.org/rss/1.0/modules/content/"
-    })
+    # ✅ 二重定義しない（attribは指定しない）
+    rss = Element("rss", version="2.0")
     ch = SubElement(rss, "channel")
     SubElement(ch, "title").text = "Merged RSS Feed"
 
@@ -85,7 +82,6 @@ def generate_rss(items):
         SubElement(i, "pubDate").text = it["pubDate"].strftime("%a, %d %b %Y %H:%M:%S +0000")
         SubElement(i, "source").text = it["site"]
 
-        # ✅ 正しい名前空間で content:encoded を出力
         content = SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded")
         content.text = f"<![CDATA[{it['content']}]]>"
 
