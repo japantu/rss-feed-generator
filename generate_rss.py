@@ -1,68 +1,106 @@
-import feedparser
-from datetime import datetime
+# -*- coding: utf-8 -*-
+import feedparser, html, re, requests
+from datetime import datetime, timezone
+from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-import html
+from xml.etree.ElementTree import Element, SubElement, ElementTree, register_namespace
+
+register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
 
 RSS_URLS = [
     "http://himasoku.com/index.rdf",
     "https://hamusoku.com/index.rdf",
     "http://blog.livedoor.jp/kinisoku/index.rdf",
-    "https://alfalfalfa.com/index.rdf",
+    "https://www.lifehacker.jp/feed/index.xml",
     "https://itainews.com/index.rdf",
     "http://blog.livedoor.jp/news23vip/index.rdf",
     "http://yaraon-blog.com/feed",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf",
     "https://www.4gamer.net/rss/index.xml",
-    "https://www.gizmodo.jp/atom.xml"
+    "https://www.gizmodo.jp/atom.xml",
 ]
+
+def to_utc(st):
+    return datetime(*st[:6], tzinfo=timezone.utc)
+
+def extract_og_image(page_url):
+    try:
+        html_txt = requests.get(page_url, timeout=4).text
+        m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']', html_txt, re.I)
+        if m:
+            return urljoin(page_url, m.group(1))
+    except Exception:
+        pass
+    return ""
 
 def fetch_and_generate():
     items = []
-
     for url in RSS_URLS:
         feed = feedparser.parse(url)
-        site_title = feed.feed.get("title", "Unknown Site")
+        site = feed.feed.get("title", "Unknown Site")
 
-        for entry in feed.entries:
-            title = entry.get("title", "")
-            link = entry.get("link", "")
-            pub_date = entry.get("published", "") or entry.get("updated", "")
-            try:
-                pub_date_obj = datetime(*entry.published_parsed[:6])
-            except Exception:
-                pub_date_obj = datetime.utcnow()
+        for e in feed.entries:
+            if e.get("published_parsed"):
+                dt = to_utc(e.published_parsed)
+            elif e.get("updated_parsed"):
+                dt = to_utc(e.updated_parsed)
+            else:
+                dt = datetime.now(timezone.utc)
 
-            description = entry.get("description", "")
-            if not description:
-                description = entry.get("summary", "")
+            html_raw = ""
+            for fld in ("content:encoded", "content", "summary", "description"):
+                v = e.get(fld)
+                if isinstance(v, list): v = v[0]
+                if isinstance(v, str) and "<img" in v:
+                    html_raw = v; break
+                elif isinstance(v, str) and not html_raw:
+                    html_raw = v
 
-            content = ""
-            if "content" in entry and entry.content:
-                content = entry.content[0].value
-            elif "content:encoded" in entry:
-                content = entry["content:encoded"]
+            thumb = ""
+            if "media_thumbnail" in e:
+                thumb = e.media_thumbnail[0]["url"]
+            elif "media_content" in e:
+                thumb = e.media_content[0]["url"]
+            elif "enclosures" in e and e.enclosures:
+                thumb = e.enclosures[0]["href"]
+            if not thumb and html_raw:
+                img = BeautifulSoup(html_raw, "html.parser").find("img")
+                if img and img.get("src"): thumb = img["src"]
+            if not thumb:
+                thumb = extract_og_image(e.get("link", ""))
 
-            # 画像の抽出
-            thumbnail = ""
-            for tag in ("content", "summary", "description"):
-                if tag in entry:
-                    soup = BeautifulSoup(entry[tag], "html.parser")
-                    img_tag = soup.find("img")
-                    if img_tag and img_tag.get("src"):
-                        thumbnail = img_tag["src"]
-                        break
+            if thumb and ('<img' not in html_raw):
+                content_html = f'<img src="{thumb}"><br>{html_raw}'
+            else:
+                content_html = html_raw or e.get("link", "")
 
             items.append({
-                "title": html.unescape(title),
-                "link": link,
-                "pubDate": pub_date_obj,
-                "description": html.unescape(description),
-                "content": html.unescape(content),
-                "thumbnail": thumbnail,
-                "site": site_title
+                "title": f"{site}閂{html.unescape(e.get('title',''))}",
+                "link": e.get("link",""),
+                "pubDate": dt,
+                "description": html.unescape(BeautifulSoup(html_raw, "html.parser").get_text(" ", strip=True)),
+                "content": content_html,
+                "site": site
             })
 
-    # ✅ ここが重要：全件を統合して、pubDateで並び替える
-    sorted_items = sorted(items, key=lambda x: x["pubDate"], reverse=True)
+    items.sort(key=lambda x: x["pubDate"], reverse=True)
+    return items[:200]
 
-    return sorted_items
+def generate_rss(items):
+    rss = Element("rss", version="2.0")
+    ch  = SubElement(rss, "channel")
+    SubElement(ch, "title").text = "Merged RSS Feed"
+
+    for it in items:
+        i = SubElement(ch, "item")
+        SubElement(i, "title").text = it["title"]
+        SubElement(i, "link").text = it["link"]
+        SubElement(i, "description").text = it["description"]
+        SubElement(i, "pubDate").text = it["pubDate"].strftime("%a, %d %b %Y %H:%M:%S +0000")
+        SubElement(i, "source").text = it["site"]
+        SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
+
+    ElementTree(rss).write("rss_output.xml", encoding="utf-8", xml_declaration=True)
+
+if __name__ == "__main__":
+    generate_rss(fetch_and_generate())
