@@ -26,7 +26,6 @@ def fetch_and_generate():
         feed = feedparser.parse(url)
         site = feed.feed.get("title", "Unknown Site")
         for e in feed.entries:
-            # --- pubDate ---
             if e.get("published_parsed"):
                 dt = to_utc(e.published_parsed)
             elif e.get("updated_parsed"):
@@ -34,32 +33,35 @@ def fetch_and_generate():
             else:
                 dt = datetime.now(timezone.utc)
 
-            # --- 本文・画像抽出 ---
             raw_desc = e.get("description", "") or e.get("summary", "")
             raw_desc = html.unescape(raw_desc)
 
             thumb = ""
-            for fld in ("content", "summary", "description"):
+            html_source = ""
+            for fld in ("content:encoded", "content", "summary", "description"):
                 v = e.get(fld)
                 if isinstance(v, list):
                     v = v[0]
                 if isinstance(v, str):
-                    img = BeautifulSoup(v, "html.parser").find("img")
+                    html_source = v
+                    soup = BeautifulSoup(v, "html.parser")
+                    img = soup.find("img")
                     if img and img.get("src"):
                         thumb = img["src"]
                         break
 
-            # --- <description> に画像タグを含める ---
+            # <content:encoded> に画像＋本文HTMLを入れる
             if thumb:
-                description = f'<img src="{thumb}"><br>{raw_desc}'
+                full_html = f'<img src="{thumb}"><br>{raw_desc}'
             else:
-                description = raw_desc
+                full_html = raw_desc
 
             items.append({
                 "title": html.unescape(e.get("title", "")),
                 "link": e.get("link", ""),
                 "pubDate": dt,
-                "description": description,
+                "description": raw_desc,  # descには画像は含めない
+                "content": full_html,     # content:encodedに画像を含める
                 "site": site,
             })
 
@@ -67,10 +69,9 @@ def fetch_and_generate():
     return items[:200]
 
 def generate_rss(items):
-    rss = Element(
-        "rss",
-        version="2.0",
-    )
+    rss = Element("rss", version="2.0", attrib={
+        "xmlns:content": "http://purl.org/rss/1.0/modules/content/"
+    })
     ch = SubElement(rss, "channel")
     SubElement(ch, "title").text = "Merged RSS Feed"
 
@@ -78,12 +79,13 @@ def generate_rss(items):
         i = SubElement(ch, "item")
         SubElement(i, "title").text = it["title"]
         SubElement(i, "link").text = it["link"]
-        # ✅ desc に画像HTMLを含めてCDATAに入れる
         SubElement(i, "description").text = f"<![CDATA[{it['description']}]]>"
-        SubElement(i, "pubDate").text = it["pubDate"].strftime(
-            "%a, %d %b %Y %H:%M:%S +0000"
-        )
+        SubElement(i, "pubDate").text = it["pubDate"].strftime("%a, %d %b %Y %H:%M:%S +0000")
         SubElement(i, "source").text = it["site"]
+
+        # 元に戻した content:encoded タグ（画像入り）
+        content = SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded")
+        content.text = f"<![CDATA[{it['content']}]]>"
 
     ElementTree(rss).write("rss_output.xml", encoding="utf-8", xml_declaration=True)
 
