@@ -2,7 +2,10 @@ import feedparser
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup
 import html
-from xml.etree.ElementTree import Element, SubElement, ElementTree
+from xml.etree.ElementTree import Element, SubElement, ElementTree, register_namespace
+
+# ✅ content:encoded を正しく出力させるための命名空間登録
+register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
 
 RSS_URLS = [
     "http://himasoku.com/index.rdf",
@@ -50,7 +53,6 @@ def fetch_and_generate():
                         thumb = img["src"]
                         break
 
-            # <content:encoded> に画像＋本文HTMLを入れる
             if thumb:
                 full_html = f'<img src="{thumb}"><br>{raw_desc}'
             else:
@@ -60,8 +62,8 @@ def fetch_and_generate():
                 "title": html.unescape(e.get("title", "")),
                 "link": e.get("link", ""),
                 "pubDate": dt,
-                "description": raw_desc,  # descには画像は含めない
-                "content": full_html,     # content:encodedに画像を含める
+                "description": raw_desc,
+                "content": full_html,
                 "site": site,
             })
 
@@ -83,7 +85,7 @@ def generate_rss(items):
         SubElement(i, "pubDate").text = it["pubDate"].strftime("%a, %d %b %Y %H:%M:%S +0000")
         SubElement(i, "source").text = it["site"]
 
-        # 元に戻した content:encoded タグ（画像入り）
+        # ✅ 正しい名前空間で content:encoded を出力
         content = SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded")
         content.text = f"<![CDATA[{it['content']}]]>"
 
