@@ -1,4 +1,3 @@
-# generate_rss.py
 import feedparser
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup
@@ -35,15 +34,19 @@ def fetch_and_generate():
 
             description = entry.get("description", "") or entry.get("summary", "")
             content = ""
-            if "content" in entry and entry.content:
+            if "content" in entry and isinstance(entry.content, list):
                 content = entry.content[0].value
             elif "content:encoded" in entry:
                 content = entry["content:encoded"]
 
+            # サムネイル抽出
             thumbnail = ""
             for tag in ("content", "summary", "description"):
                 if tag in entry:
-                    soup = BeautifulSoup(entry[tag], "html.parser")
+                    raw = entry[tag]
+                    if isinstance(raw, list):  # ← これが今回のクラッシュ原因
+                        raw = raw[0]
+                    soup = BeautifulSoup(raw, "html.parser")
                     img_tag = soup.find("img")
                     if img_tag and img_tag.get("src"):
                         thumbnail = img_tag["src"]
