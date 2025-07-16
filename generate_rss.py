@@ -5,7 +5,9 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from xml.etree.ElementTree import Element, SubElement, ElementTree, register_namespace
 
+# 名前空間の登録（重複防止）
 register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
+register_namespace("dc", "http://purl.org/dc/elements/1.1/")
 
 RSS_URLS = [
     "http://himasoku.com/index.rdf",
@@ -40,6 +42,7 @@ def fetch_and_generate():
         site = feed.feed.get("title", "Unknown Site")
 
         for e in feed.entries:
+            # 投稿日時の取得
             if e.get("published_parsed"):
                 dt = to_utc(e.published_parsed)
             elif e.get("updated_parsed"):
@@ -47,6 +50,7 @@ def fetch_and_generate():
             else:
                 dt = datetime.now(timezone.utc)
 
+            # 元HTMLの抽出（<img>付きが優先）
             html_raw = ""
             for fld in ("content:encoded", "content", "summary", "description"):
                 v = e.get(fld)
@@ -56,6 +60,7 @@ def fetch_and_generate():
                 elif isinstance(v, str) and not html_raw:
                     html_raw = v
 
+            # サムネイル抽出
             thumb = ""
             if "media_thumbnail" in e:
                 thumb = e.media_thumbnail[0]["url"]
@@ -69,6 +74,7 @@ def fetch_and_generate():
             if not thumb:
                 thumb = extract_og_image(e.get("link", ""))
 
+            # content:encoded の内容を組み立て
             if thumb and ('<img' not in html_raw):
                 content_html = f'<img src="{thumb}"><br>{html_raw}'
             else:
@@ -76,7 +82,7 @@ def fetch_and_generate():
 
             items.append({
                 "title": f"{site}閂{html.unescape(e.get('title',''))}",
-                "link": e.get("link",""),
+                "link": e.get("link", ""),
                 "pubDate": dt,
                 "description": html.unescape(BeautifulSoup(html_raw, "html.parser").get_text(" ", strip=True)),
                 "content": content_html,
@@ -88,7 +94,7 @@ def fetch_and_generate():
 
 def generate_rss(items):
     rss = Element("rss", version="2.0")
-    ch  = SubElement(rss, "channel")
+    ch = SubElement(rss, "channel")
     SubElement(ch, "title").text = "Merged RSS Feed"
 
     for it in items:
@@ -96,8 +102,10 @@ def generate_rss(items):
         SubElement(i, "title").text = it["title"]
         SubElement(i, "link").text = it["link"]
         SubElement(i, "description").text = it["description"]
-        SubElement(i, "pubDate").text = it["pubDate"].strftime("%a, %d %b %Y %H:%M:%S +0000")
         SubElement(i, "source").text = it["site"]
+        # dc:date に ISO 8601 形式で出力
+        SubElement(i, "{http://purl.org/dc/elements/1.1/}date").text = it["pubDate"].astimezone().isoformat()
+        # content:encoded に HTML 本文
         SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
 
     ElementTree(rss).write("rss_output.xml", encoding="utf-8", xml_declaration=True)
