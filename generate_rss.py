@@ -2,7 +2,6 @@ import feedparser
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup
 import html
-import xml.etree.ElementTree as ET
 
 RSS_URLS = [
     "http://himasoku.com/index.rdf",
@@ -35,25 +34,28 @@ def fetch_and_generate():
 
             description = entry.get("description", "") or entry.get("summary", "")
             content = ""
-            if "content" in entry and entry.content:
+            if "content" in entry and isinstance(entry.content, list):
                 content = entry.content[0].value
             elif "content:encoded" in entry:
-                content = entry["content:encoded"]
-            else:
-                content = description
+                encoded = entry["content:encoded"]
+                if isinstance(encoded, list):
+                    content = encoded[0]
+                else:
+                    content = encoded
 
-            # サムネイル画像を description に埋め込む
+            # サムネイル抽出
             thumbnail = ""
             for tag in ("content", "summary", "description"):
                 if tag in entry:
-                    soup = BeautifulSoup(entry[tag], "html.parser")
-                    img_tag = soup.find("img")
-                    if img_tag and img_tag.get("src"):
-                        thumbnail = img_tag["src"]
-                        break
-
-            if thumbnail:
-                description = f'<img src="{thumbnail}" /><br>{description}'
+                    tag_data = entry[tag]
+                    if isinstance(tag_data, list):
+                        tag_data = tag_data[0]
+                    if isinstance(tag_data, str):
+                        soup = BeautifulSoup(tag_data, "html.parser")
+                        img_tag = soup.find("img")
+                        if img_tag and img_tag.get("src"):
+                            thumbnail = img_tag["src"]
+                            break
 
             items.append({
                 "title": html.unescape(title),
@@ -61,28 +63,10 @@ def fetch_and_generate():
                 "pubDate": pub_date_obj,
                 "description": html.unescape(description),
                 "content": html.unescape(content),
+                "thumbnail": thumbnail,
                 "site": site_title
             })
 
+    # 全体で200件に絞って返す（更新日時順）
     sorted_items = sorted(items, key=lambda x: x["pubDate"], reverse=True)
     return sorted_items[:200]
-
-def generate_rss(items):
-    rss = ET.Element("rss", version="2.0", attrib={
-        "xmlns:content": "http://purl.org/rss/1.0/modules/content/"
-    })
-    channel = ET.SubElement(rss, "channel")
-    ET.SubElement(channel, "title").text = "Merged RSS Feed"
-    ET.SubElement(channel, "link").text = "https://rss-x2xp.onrender.com/"
-    ET.SubElement(channel, "description").text = "Combined feed of multiple sources"
-
-    for item in items:
-        entry = ET.SubElement(channel, "item")
-        ET.SubElement(entry, "title").text = f"{item['site']} 閂 {item['title']}"
-        ET.SubElement(entry, "link").text = item["link"]
-        ET.SubElement(entry, "description").text = f"<![CDATA[{item['description']}]]>"
-        ET.SubElement(entry, "pubDate").text = item["pubDate"].strftime("%a, %d %b %Y %H:%M:%S +0000")
-        content_encoded = ET.SubElement(entry, "content:encoded")
-        content_encoded.text = f"<![CDATA[{item['content']}]]>"
-
-    return ET.tostring(rss, encoding="utf-8", xml_declaration=True)
