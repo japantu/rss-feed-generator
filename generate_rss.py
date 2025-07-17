@@ -2,6 +2,7 @@ import feedparser
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup
 import html
+import xml.etree.ElementTree as ET
 
 RSS_URLS = [
     "http://himasoku.com/index.rdf",
@@ -34,23 +35,25 @@ def fetch_and_generate():
 
             description = entry.get("description", "") or entry.get("summary", "")
             content = ""
-            if "content" in entry and isinstance(entry.content, list):
+            if "content" in entry and entry.content:
                 content = entry.content[0].value
             elif "content:encoded" in entry:
                 content = entry["content:encoded"]
+            else:
+                content = description
 
-            # サムネイル抽出
+            # サムネイル画像を description に埋め込む
             thumbnail = ""
             for tag in ("content", "summary", "description"):
                 if tag in entry:
-                    raw = entry[tag]
-                    if isinstance(raw, list):  # ← これが今回のクラッシュ原因
-                        raw = raw[0]
-                    soup = BeautifulSoup(raw, "html.parser")
+                    soup = BeautifulSoup(entry[tag], "html.parser")
                     img_tag = soup.find("img")
                     if img_tag and img_tag.get("src"):
                         thumbnail = img_tag["src"]
                         break
+
+            if thumbnail:
+                description = f'<img src="{thumbnail}" /><br>{description}'
 
             items.append({
                 "title": html.unescape(title),
@@ -58,9 +61,28 @@ def fetch_and_generate():
                 "pubDate": pub_date_obj,
                 "description": html.unescape(description),
                 "content": html.unescape(content),
-                "thumbnail": thumbnail,
                 "site": site_title
             })
 
     sorted_items = sorted(items, key=lambda x: x["pubDate"], reverse=True)
     return sorted_items[:200]
+
+def generate_rss(items):
+    rss = ET.Element("rss", version="2.0", attrib={
+        "xmlns:content": "http://purl.org/rss/1.0/modules/content/"
+    })
+    channel = ET.SubElement(rss, "channel")
+    ET.SubElement(channel, "title").text = "Merged RSS Feed"
+    ET.SubElement(channel, "link").text = "https://rss-x2xp.onrender.com/"
+    ET.SubElement(channel, "description").text = "Combined feed of multiple sources"
+
+    for item in items:
+        entry = ET.SubElement(channel, "item")
+        ET.SubElement(entry, "title").text = f"{item['site']} 閂 {item['title']}"
+        ET.SubElement(entry, "link").text = item["link"]
+        ET.SubElement(entry, "description").text = f"<![CDATA[{item['description']}]]>"
+        ET.SubElement(entry, "pubDate").text = item["pubDate"].strftime("%a, %d %b %Y %H:%M:%S +0000")
+        content_encoded = ET.SubElement(entry, "content:encoded")
+        content_encoded.text = f"<![CDATA[{item['content']}]]>"
+
+    return ET.tostring(rss, encoding="utf-8", xml_declaration=True)
