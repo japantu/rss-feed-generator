@@ -44,7 +44,8 @@ def fetch_and_generate():
                 if tag in entry:
                     value = entry[tag]
                     if isinstance(value, list):
-                        value = " ".join(value)
+                        # FeedParserDict などを str に変換
+                        value = " ".join(str(v) for v in value)
                     soup = BeautifulSoup(value, "html.parser")
                     img_tag = soup.find("img")
                     if img_tag and img_tag.get("src"):
