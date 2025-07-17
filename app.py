@@ -1,25 +1,43 @@
 from flask import Flask, Response
-from generate_rss import fetch_and_generate
-import xml.etree.ElementTree as ET
+from generate_rss import fetch_and_generate, generate_rss
+import os
 
 app = Flask(__name__)
 
 @app.route("/")
+def home():
+    items = fetch_and_generate()
+    generate_rss(items)
+    return Response("RSS Feed is available at <a href='/rss'>/rss</a>", mimetype="text/html")
+
+@app.route("/rss")
 def rss_feed():
     items = fetch_and_generate()
+    rss_xml = generate_rss_text(items)
+    return Response(rss_xml, mimetype="application/rss+xml")
 
-    rss = ET.Element("rss", version="2.0", attrib={"xmlns:dc": "http://purl.org/dc/elements/1.1/"})
-    channel = ET.SubElement(rss, "channel")
-    ET.SubElement(channel, "title").text = "Merged RSS Feed"
-    ET.SubElement(channel, "link").text = "https://rss-x2xp.onrender.com/"
-    ET.SubElement(channel, "description").text = "Combined feed from multiple sources"
+def generate_rss_text(items):
+    from xml.etree.ElementTree import Element, SubElement, tostring, register_namespace
+    from io import BytesIO
 
-    for item in items:
-        item_elem = ET.SubElement(channel, "item")
-        ET.SubElement(item_elem, "title").text = item["title"]
-        ET.SubElement(item_elem, "link").text = item["link"]
-        ET.SubElement(item_elem, "description").text = item["description"]
-        ET.SubElement(item_elem, "dc:date").text = item["dc_date"]
+    register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
+    register_namespace("dc", "http://purl.org/dc/elements/1.1/")
+    
+    rss = Element("rss", version="2.0")
+    ch  = SubElement(rss, "channel")
+    SubElement(ch, "title").text = "Merged RSS Feed"
 
-    xml_str = ET.tostring(rss, encoding="utf-8", method="xml")
-    return Response(xml_str, mimetype="application/xml")
+    for it in items:
+        i = SubElement(ch, "item")
+        SubElement(i, "title").text = it["title"]
+        SubElement(i, "link").text = it["link"]
+        SubElement(i, "description").text = it["description"]
+        SubElement(i, "pubDate").text = it["pubDate"].strftime("%a, %d %b %Y %H:%M:%S +0000")
+        SubElement(i, "source").text = it["site"]
+        SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
+        SubElement(i, "{http://purl.org/dc/elements/1.1/}date").text = it["dcdate"]
+
+    from xml.etree.ElementTree import ElementTree
+    bio = BytesIO()
+    ElementTree(rss).write(bio, encoding="utf-8", xml_declaration=True)
+    return bio.getvalue()

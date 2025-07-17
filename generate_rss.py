@@ -1,8 +1,12 @@
-import feedparser
+# -*- coding: utf-8 -*-
+import feedparser, html, re, requests
 from datetime import datetime, timezone
+from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-import html
-import email.utils
+from xml.etree.ElementTree import Element, SubElement, ElementTree, register_namespace
+
+register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
+register_namespace("dc", "http://purl.org/dc/elements/1.1/")
 
 RSS_URLS = [
     "http://himasoku.com/index.rdf",
@@ -14,76 +18,92 @@ RSS_URLS = [
     "http://yaraon-blog.com/feed",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf",
     "https://www.4gamer.net/rss/index.xml",
-    "https://www.gizmodo.jp/atom.xml"
+    "https://www.gizmodo.jp/atom.xml",
 ]
 
-def parse_datetime(entry):
-    # 優先度付きでタイムスタンプを抽出
-    if hasattr(entry, "published_parsed") and entry.published_parsed:
-        return datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
-    elif hasattr(entry, "updated_parsed") and entry.updated_parsed:
-        return datetime(*entry.updated_parsed[:6], tzinfo=timezone.utc)
-    elif "published" in entry:
-        try:
-            return datetime.fromtimestamp(email.utils.mktime_tz(email.utils.parsedate_tz(entry.published)), tz=timezone.utc)
-        except Exception:
-            pass
-    elif "updated" in entry:
-        try:
-            return datetime.fromtimestamp(email.utils.mktime_tz(email.utils.parsedate_tz(entry.updated)), tz=timezone.utc)
-        except Exception:
-            pass
-    # fallback: 現在時刻（ただしミリ秒違いを強制的に加える）
-    return datetime.now(timezone.utc)
+def to_utc(st):
+    return datetime(*st[:6], tzinfo=timezone.utc)
 
-def extract_image(entry):
-    # content フィールドからHTML抽出を試みる
-    if "content" in entry and isinstance(entry["content"], list):
-        for c in entry["content"]:
-            if "value" in c:
-                soup = BeautifulSoup(c["value"], "html.parser")
-                img = soup.find("img")
-                if img and img.get("src"):
-                    return img["src"]
-
-    # content:encoded を文字列で取り出す
-    for field in ["content:encoded", "summary", "description"]:
-        value = entry.get(field)
-        if isinstance(value, list):
-            value = " ".join(str(v) for v in value)
-        if isinstance(value, str):
-            soup = BeautifulSoup(value, "html.parser")
-            img = soup.find("img")
-            if img and img.get("src"):
-                return img["src"]
-
+def extract_og_image(page_url):
+    try:
+        html_txt = requests.get(page_url, timeout=4).text
+        m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']', html_txt, re.I)
+        if m:
+            return urljoin(page_url, m.group(1))
+    except Exception:
+        pass
     return ""
 
 def fetch_and_generate():
     items = []
-
     for url in RSS_URLS:
         feed = feedparser.parse(url)
-        site_title = feed.feed.get("title", "Unknown Site")
+        site = feed.feed.get("title", "Unknown Site")
 
-        for entry in feed.entries:
-            title = html.unescape(entry.get("title", ""))
-            link = entry.get("link", "")
-            pub_date = parse_datetime(entry)
-            description = html.unescape(entry.get("description", "") or entry.get("summary", ""))
+        for e in feed.entries:
+            if e.get("published_parsed"):
+                dt = to_utc(e.published_parsed)
+            elif e.get("updated_parsed"):
+                dt = to_utc(e.updated_parsed)
+            else:
+                dt = datetime.now(timezone.utc)
 
-            image_url = extract_image(entry)
-            if image_url:
-                description = f'<img src="{image_url}"><br>{description}'
+            html_raw = ""
+            for fld in ("content:encoded", "content", "summary", "description"):
+                v = e.get(fld)
+                if isinstance(v, list): v = v[0]
+                if isinstance(v, str) and "<img" in v:
+                    html_raw = v; break
+                elif isinstance(v, str) and not html_raw:
+                    html_raw = v
+
+            thumb = ""
+            if "media_thumbnail" in e:
+                thumb = e.media_thumbnail[0]["url"]
+            elif "media_content" in e:
+                thumb = e.media_content[0]["url"]
+            elif "enclosures" in e and e.enclosures:
+                thumb = e.enclosures[0]["href"]
+            if not thumb and html_raw:
+                img = BeautifulSoup(html_raw, "html.parser").find("img")
+                if img and img.get("src"): thumb = img["src"]
+            if not thumb:
+                thumb = extract_og_image(e.get("link", ""))
+
+            if thumb and ('<img' not in html_raw):
+                content_html = f'<img src="{thumb}"><br>{html_raw}'
+            else:
+                content_html = html_raw or e.get("link", "")
 
             items.append({
-                "title": f"{site_title}閂{title}",
-                "link": link,
-                "pubDate": pub_date,
-                "dc_date": pub_date.isoformat(),
-                "description": description
+                "title": f"{site}閂{html.unescape(e.get('title',''))}",
+                "link": e.get("link",""),
+                "pubDate": dt,
+                "description": html.unescape(BeautifulSoup(html_raw, "html.parser").get_text(" ", strip=True)),
+                "content": content_html,
+                "site": site,
+                "dcdate": dt.isoformat()
             })
 
-    # 更新時間順にソート
-    sorted_items = sorted(items, key=lambda x: x["pubDate"], reverse=True)
-    return sorted_items[:200]
+    items.sort(key=lambda x: x["pubDate"], reverse=True)
+    return items[:200]
+
+def generate_rss(items):
+    rss = Element("rss", version="2.0")
+    ch  = SubElement(rss, "channel")
+    SubElement(ch, "title").text = "Merged RSS Feed"
+
+    for it in items:
+        i = SubElement(ch, "item")
+        SubElement(i, "title").text = it["title"]
+        SubElement(i, "link").text = it["link"]
+        SubElement(i, "description").text = it["description"]
+        SubElement(i, "pubDate").text = it["pubDate"].strftime("%a, %d %b %Y %H:%M:%S +0000")
+        SubElement(i, "source").text = it["site"]
+        SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
+        SubElement(i, "{http://purl.org/dc/elements/1.1/}date").text = it["dcdate"]
+
+    ElementTree(rss).write("rss_output.xml", encoding="utf-8", xml_declaration=True)
+
+if __name__ == "__main__":
+    generate_rss(fetch_and_generate())
