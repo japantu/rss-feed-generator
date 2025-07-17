@@ -18,12 +18,11 @@ RSS_URLS = [
 
 def fetch_and_generate():
     items = []
-
     for url in RSS_URLS:
         feed = feedparser.parse(url)
         site_title = feed.feed.get("title", "Unknown Site")
 
-        for entry in feed.entries:  # ← 全件取得
+        for entry in feed.entries:
             title = entry.get("title", "")
             link = entry.get("link", "")
             pub_date = entry.get("published", "") or entry.get("updated", "")
@@ -34,7 +33,7 @@ def fetch_and_generate():
 
             description = entry.get("description", "") or entry.get("summary", "")
             content = ""
-            if "content" in entry and isinstance(entry.content, list) and entry.content:
+            if "content" in entry and entry.content:
                 content = entry.content[0].value
             elif "content:encoded" in entry:
                 content = entry["content:encoded"]
@@ -42,8 +41,11 @@ def fetch_and_generate():
             # サムネイル抽出
             thumbnail = ""
             for tag in ("content", "summary", "description"):
-                if tag in entry and isinstance(entry[tag], str):
-                    soup = BeautifulSoup(entry[tag], "html.parser")
+                if tag in entry:
+                    value = entry[tag]
+                    if isinstance(value, list):
+                        value = " ".join(value)
+                    soup = BeautifulSoup(value, "html.parser")
                     img_tag = soup.find("img")
                     if img_tag and img_tag.get("src"):
                         thumbnail = img_tag["src"]
@@ -59,6 +61,5 @@ def fetch_and_generate():
                 "site": site_title
             })
 
-    # pubDateで全件ソート → 上位200件だけ返す
     sorted_items = sorted(items, key=lambda x: x["pubDate"], reverse=True)
     return sorted_items[:200]

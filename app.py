@@ -1,46 +1,37 @@
 from flask import Flask, Response
 from generate_rss import fetch_and_generate
 from xml.etree.ElementTree import Element, SubElement, tostring
-from xml.dom import minidom
-from datetime import timezone
-
-import os
+from xml.dom.minidom import parseString
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET"])
-def serve_rss():
+@app.route('/')
+def rss_feed():
     items = fetch_and_generate()
 
-    rss = Element("rss", version="2.0", attrib={
-        "xmlns:dc": "http://purl.org/dc/elements/1.1/",
-        "xmlns:content": "http://purl.org/rss/1.0/modules/content/"
+    rss = Element('rss', {
+        'version': '2.0',
+        'xmlns:dc': 'http://purl.org/dc/elements/1.1/',
+        'xmlns:content': 'http://purl.org/rss/1.0/modules/content/'
     })
-    channel = SubElement(rss, "channel")
-    SubElement(channel, "title").text = "Merged RSS Feed"
+    channel = SubElement(rss, 'channel')
+    SubElement(channel, 'title').text = 'Merged RSS Feed'
+    SubElement(channel, 'link').text = 'https://rss-x2xp.onrender.com/'
+    SubElement(channel, 'description').text = 'Merged feed from multiple sources.'
 
     for item in items:
-        entry = SubElement(channel, "item")
-        SubElement(entry, "title").text = f"{item['site']} 閂 {item['title']}"
-        SubElement(entry, "link").text = item["link"]
-        SubElement(entry, "description").text = item["description"]
+        entry = SubElement(channel, 'item')
+        SubElement(entry, 'title').text = f"{item['title']} 閂 {item['site']}"
+        SubElement(entry, 'link').text = item['link']
+        SubElement(entry, 'description').text = f'<img src="{item["thumbnail"]}" /><br>{item["description"]}'
+        SubElement(entry, 'dc:date').text = item['pubDate'].isoformat()
+        SubElement(entry, 'source').text = item['site']
+        content = SubElement(entry, 'content:encoded')
+        content.text = item["content"]
 
-        # 画像入りの content:encoded
-        content_html = item["description"]
-        if item["thumbnail"]:
-            content_html = f'<img src="{item["thumbnail"]}"><br>{content_html}'
-        content = SubElement(entry, "content:encoded")
-        content.text = content_html
+    xml_string = tostring(rss, encoding='utf-8')
+    pretty_xml = parseString(xml_string).toprettyxml(indent="  ", encoding='utf-8')
+    return Response(pretty_xml, content_type='text/xml')
 
-        SubElement(entry, "dc:date").text = item["pubDate"].astimezone(timezone.utc).isoformat()
-
-    rough_string = tostring(rss, encoding="utf-8")
-    pretty_xml = minidom.parseString(rough_string).toprettyxml(indent="  ", encoding="utf-8")
-
-    return Response(pretty_xml, content_type="application/rss+xml")
-
-
-# ✅ これがないとRenderがHTTPポートを検知できない！
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=10000)
