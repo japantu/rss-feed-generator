@@ -18,6 +18,7 @@ RSS_URLS = [
 
 def fetch_and_generate():
     items = []
+
     for url in RSS_URLS:
         feed = feedparser.parse(url)
         site_title = feed.feed.get("title", "Unknown Site")
@@ -33,33 +34,35 @@ def fetch_and_generate():
 
             description = entry.get("description", "") or entry.get("summary", "")
             content = ""
-            if "content" in entry and entry.content:
-                content = entry.content[0].value
+            if "content" in entry and isinstance(entry["content"], list):
+                content = entry["content"][0].value
             elif "content:encoded" in entry:
                 content = entry["content:encoded"]
 
-            # サムネイル抽出
+            # 画像抽出（description または content 優先）
             thumbnail = ""
-            for tag in ("content", "summary", "description"):
-                if tag in entry:
-                    value = entry[tag]
-                    if isinstance(value, list):
-                        # FeedParserDict などを str に変換
-                        value = " ".join(str(v) for v in value)
-                    soup = BeautifulSoup(value, "html.parser")
-                    img_tag = soup.find("img")
-                    if img_tag and img_tag.get("src"):
-                        thumbnail = img_tag["src"]
-                        break
+            for tag in ("content", "description", "summary"):
+                value = entry.get(tag)
+                if isinstance(value, list):
+                    value = " ".join(str(v) for v in value)
+                elif not isinstance(value, str):
+                    continue
+                soup = BeautifulSoup(value, "html.parser")
+                img_tag = soup.find("img")
+                if img_tag and img_tag.get("src"):
+                    thumbnail = img_tag["src"]
+                    break
+
+            # 画像をdescriptionに含める
+            if thumbnail:
+                description = f'<img src="{thumbnail}"><br>{html.unescape(description)}'
 
             items.append({
-                "title": html.unescape(title),
+                "title": f"{site_title}閂{html.unescape(title)}",
                 "link": link,
                 "pubDate": pub_date_obj,
-                "description": html.unescape(description),
-                "content": html.unescape(content),
-                "thumbnail": thumbnail,
-                "site": site_title
+                "dc_date": pub_date_obj.isoformat(),
+                "description": html.unescape(description)
             })
 
     sorted_items = sorted(items, key=lambda x: x["pubDate"], reverse=True)
