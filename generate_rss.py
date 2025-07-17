@@ -23,7 +23,7 @@ def fetch_and_generate():
         feed = feedparser.parse(url)
         site_title = feed.feed.get("title", "Unknown Site")
 
-        for entry in feed.entries:
+        for entry in feed.entries:  # ← 全件取得
             title = entry.get("title", "")
             link = entry.get("link", "")
             pub_date = entry.get("published", "") or entry.get("updated", "")
@@ -34,28 +34,20 @@ def fetch_and_generate():
 
             description = entry.get("description", "") or entry.get("summary", "")
             content = ""
-            if "content" in entry and isinstance(entry.content, list):
+            if "content" in entry and isinstance(entry.content, list) and entry.content:
                 content = entry.content[0].value
             elif "content:encoded" in entry:
-                encoded = entry["content:encoded"]
-                if isinstance(encoded, list):
-                    content = encoded[0]
-                else:
-                    content = encoded
+                content = entry["content:encoded"]
 
             # サムネイル抽出
             thumbnail = ""
             for tag in ("content", "summary", "description"):
-                if tag in entry:
-                    tag_data = entry[tag]
-                    if isinstance(tag_data, list):
-                        tag_data = tag_data[0]
-                    if isinstance(tag_data, str):
-                        soup = BeautifulSoup(tag_data, "html.parser")
-                        img_tag = soup.find("img")
-                        if img_tag and img_tag.get("src"):
-                            thumbnail = img_tag["src"]
-                            break
+                if tag in entry and isinstance(entry[tag], str):
+                    soup = BeautifulSoup(entry[tag], "html.parser")
+                    img_tag = soup.find("img")
+                    if img_tag and img_tag.get("src"):
+                        thumbnail = img_tag["src"]
+                        break
 
             items.append({
                 "title": html.unescape(title),
@@ -67,6 +59,6 @@ def fetch_and_generate():
                 "site": site_title
             })
 
-    # 全体で200件に絞って返す（更新日時順）
+    # pubDateで全件ソート → 上位200件だけ返す
     sorted_items = sorted(items, key=lambda x: x["pubDate"], reverse=True)
     return sorted_items[:200]

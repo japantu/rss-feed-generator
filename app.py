@@ -8,7 +8,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return "RSS Feed is running. Access /rss to view feed."
+    # 直接 /rss にリダイレクトせず、HTMLページで誘導せず、直接内容出す方式
+    return "This endpoint serves merged RSS. Access /rss for feed."
 
 @app.route("/rss")
 def rss():
@@ -27,7 +28,7 @@ def rss():
         entry = ET.SubElement(channel, "item")
         ET.SubElement(entry, "title").text = f"{item['site']}｜{item['title']}"
         ET.SubElement(entry, "link").text = item["link"]
-        ET.SubElement(entry, "description").text = item["description"]
+        ET.SubElement(entry, "description").text = generate_description(item)
 
         dc_date = ET.SubElement(entry, "{http://purl.org/dc/elements/1.1/}date")
         dc_date.text = item["pubDate"].astimezone(timezone.utc).isoformat()
@@ -35,12 +36,18 @@ def rss():
         content_encoded = ET.SubElement(entry, "{http://purl.org/rss/1.0/modules/content/}encoded")
         content_html = ""
         if item["thumbnail"]:
-            content_html += f'<img src="{item["thumbnail"]}" /><br>'
+            content_html += f'<img src="{item["thumbnail"]}"/><br>'
         content_html += item["content"]
         content_encoded.text = content_html
 
     xml_data = ET.tostring(rss, encoding="utf-8", method="xml")
-    return Response(xml_data, mimetype="application/rss+xml")
+    return Response(xml_data, mimetype="text/xml")  # ← ここを変更すればブラウザで表示される
+
+def generate_description(item):
+    if item["thumbnail"]:
+        return f'<img src="{item["thumbnail"]}" /><br>{item["description"]}'
+    else:
+        return item["description"]
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
