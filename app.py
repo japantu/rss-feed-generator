@@ -8,6 +8,10 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
+    return "RSS Feed is running. Access /rss to view feed."
+
+@app.route("/rss")
+def rss():
     items = fetch_and_generate()
 
     rss = ET.Element("rss", version="2.0", attrib={
@@ -16,8 +20,8 @@ def index():
     })
     channel = ET.SubElement(rss, "channel")
     ET.SubElement(channel, "title").text = "統合フィード"
-    ET.SubElement(channel, "link").text = "https://rss-x2xp.onrender.com/"
-    ET.SubElement(channel, "description").text = "複数のRSSを結合"
+    ET.SubElement(channel, "link").text = "https://rss-x2xp.onrender.com/rss"
+    ET.SubElement(channel, "description").text = "複数RSSを更新順に統合"
 
     for item in items:
         entry = ET.SubElement(channel, "item")
@@ -39,5 +43,5 @@ def index():
     return Response(xml_data, mimetype="application/rss+xml")
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # ← 環境変数 PORT を使う
-    app.run(host="0.0.0.0", port=port)         # ← 0.0.0.0 で外部からアクセス可能に
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
