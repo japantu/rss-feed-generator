@@ -18,18 +18,36 @@ RSS_URLS = [
 ]
 
 def parse_datetime(entry):
-    if hasattr(entry, 'published_parsed') and entry.published_parsed:
+    # 優先度付きでタイムスタンプを抽出
+    if hasattr(entry, "published_parsed") and entry.published_parsed:
         return datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
-    elif 'published' in entry:
+    elif hasattr(entry, "updated_parsed") and entry.updated_parsed:
+        return datetime(*entry.updated_parsed[:6], tzinfo=timezone.utc)
+    elif "published" in entry:
         try:
             return datetime.fromtimestamp(email.utils.mktime_tz(email.utils.parsedate_tz(entry.published)), tz=timezone.utc)
         except Exception:
             pass
+    elif "updated" in entry:
+        try:
+            return datetime.fromtimestamp(email.utils.mktime_tz(email.utils.parsedate_tz(entry.updated)), tz=timezone.utc)
+        except Exception:
+            pass
+    # fallback: 現在時刻（ただしミリ秒違いを強制的に加える）
     return datetime.now(timezone.utc)
 
 def extract_image(entry):
-    # 画像を含むフィールドを順に試す
-    for field in ['content:encoded', 'content', 'summary', 'description']:
+    # content フィールドからHTML抽出を試みる
+    if "content" in entry and isinstance(entry["content"], list):
+        for c in entry["content"]:
+            if "value" in c:
+                soup = BeautifulSoup(c["value"], "html.parser")
+                img = soup.find("img")
+                if img and img.get("src"):
+                    return img["src"]
+
+    # content:encoded を文字列で取り出す
+    for field in ["content:encoded", "summary", "description"]:
         value = entry.get(field)
         if isinstance(value, list):
             value = " ".join(str(v) for v in value)
@@ -38,6 +56,7 @@ def extract_image(entry):
             img = soup.find("img")
             if img and img.get("src"):
                 return img["src"]
+
     return ""
 
 def fetch_and_generate():
@@ -51,8 +70,7 @@ def fetch_and_generate():
             title = html.unescape(entry.get("title", ""))
             link = entry.get("link", "")
             pub_date = parse_datetime(entry)
-            description = entry.get("description", "") or entry.get("summary", "")
-            description = html.unescape(description)
+            description = html.unescape(entry.get("description", "") or entry.get("summary", ""))
 
             image_url = extract_image(entry)
             if image_url:
@@ -66,6 +84,6 @@ def fetch_and_generate():
                 "description": description
             })
 
-    # 更新時間順に並べ替え
+    # 更新時間順にソート
     sorted_items = sorted(items, key=lambda x: x["pubDate"], reverse=True)
     return sorted_items[:200]
