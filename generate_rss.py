@@ -24,12 +24,13 @@ RSS_URLS = [
 def to_utc(st):
     return datetime(*st[:6], tzinfo=timezone.utc)
 
-def extract_og_image(page_url):
+def extract_og_image(url):
     try:
-        html_txt = requests.get(page_url, timeout=4).text
-        m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']', html_txt, re.I)
-        if m:
-            return urljoin(page_url, m.group(1))
+        res = requests.get(url, timeout=5)
+        if res.ok:
+            m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']', res.text, re.I)
+            if m:
+                return urljoin(url, m.group(1))
     except Exception:
         pass
     return ""
@@ -39,8 +40,8 @@ def fetch_and_generate():
     for url in RSS_URLS:
         feed = feedparser.parse(url)
         site = feed.feed.get("title", "Unknown Site")
-
         for e in feed.entries:
+            dt = None
             if e.get("published_parsed"):
                 dt = to_utc(e.published_parsed)
             elif e.get("updated_parsed"):
@@ -53,7 +54,8 @@ def fetch_and_generate():
                 v = e.get(fld)
                 if isinstance(v, list): v = v[0]
                 if isinstance(v, str) and "<img" in v:
-                    html_raw = v; break
+                    html_raw = v
+                    break
                 elif isinstance(v, str) and not html_raw:
                     html_raw = v
 
@@ -66,7 +68,8 @@ def fetch_and_generate():
                 thumb = e.enclosures[0]["href"]
             if not thumb and html_raw:
                 img = BeautifulSoup(html_raw, "html.parser").find("img")
-                if img and img.get("src"): thumb = img["src"]
+                if img and img.get("src"):
+                    thumb = img["src"]
             if not thumb:
                 thumb = extract_og_image(e.get("link", ""))
 
@@ -77,20 +80,19 @@ def fetch_and_generate():
 
             items.append({
                 "title": f"{site}閂{html.unescape(e.get('title',''))}",
-                "link": e.get("link",""),
+                "link": e.get("link", ""),
                 "pubDate": dt,
                 "description": html.unescape(BeautifulSoup(html_raw, "html.parser").get_text(" ", strip=True)),
                 "content": content_html,
-                "site": site,
-                "dcdate": dt.isoformat()
+                "site": site
             })
 
     items.sort(key=lambda x: x["pubDate"], reverse=True)
-    return items[:200]
+    return items[:100]
 
 def generate_rss(items):
     rss = Element("rss", version="2.0")
-    ch  = SubElement(rss, "channel")
+    ch = SubElement(rss, "channel")
     SubElement(ch, "title").text = "Merged RSS Feed"
 
     for it in items:
@@ -98,12 +100,8 @@ def generate_rss(items):
         SubElement(i, "title").text = it["title"]
         SubElement(i, "link").text = it["link"]
         SubElement(i, "description").text = it["description"]
-        SubElement(i, "pubDate").text = it["pubDate"].strftime("%a, %d %b %Y %H:%M:%S +0000")
+        SubElement(i, "dc:date").text = it["pubDate"].isoformat()
         SubElement(i, "source").text = it["site"]
         SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
-        SubElement(i, "{http://purl.org/dc/elements/1.1/}date").text = it["dcdate"]
 
     ElementTree(rss).write("rss_output.xml", encoding="utf-8", xml_declaration=True)
-
-if __name__ == "__main__":
-    generate_rss(fetch_and_generate())
