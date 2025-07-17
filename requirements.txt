@@ -1,4 +1,4 @@
+flask
 feedparser
 beautifulsoup4
-flask
 gunicorn

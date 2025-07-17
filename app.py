@@ -3,7 +3,6 @@ from generate_rss import fetch_and_generate
 from xml.etree import ElementTree as ET
 from datetime import timezone
 import os
-from email.utils import format_datetime
 
 app = Flask(__name__)
 
@@ -32,7 +31,7 @@ def index():
         content_encoded = ET.SubElement(entry, "{http://purl.org/rss/1.0/modules/content/}encoded")
         content_html = ""
         if item["thumbnail"]:
-            content_html += f'<img src="{item["thumbnail"]}" alt="" /><br>'
+            content_html += f'<img src="{item["thumbnail"]}" /><br>'
         content_html += item["content"]
         content_encoded.text = content_html
 
@@ -40,5 +39,5 @@ def index():
     return Response(xml_data, mimetype="application/rss+xml")
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 10000))  # ← 環境変数 PORT を使う
+    app.run(host="0.0.0.0", port=port)         # ← 0.0.0.0 で外部からアクセス可能に
