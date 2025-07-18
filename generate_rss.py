@@ -3,7 +3,10 @@ import feedparser, html, re, requests
 from datetime import datetime, timezone
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-from xml.etree.ElementTree import Element, SubElement, ElementTree, register_namespace
+from xml.etree.ElementTree import Element, SubElement, tostring, register_namespace
+
+register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
+register_namespace("dc", "http://purl.org/dc/elements/1.1/")
 
 RSS_URLS = [
     "http://himasoku.com/index.rdf",
@@ -21,12 +24,12 @@ RSS_URLS = [
 def to_utc(st):
     return datetime(*st[:6], tzinfo=timezone.utc)
 
-def extract_og_image(page_url):
+def extract_og_image(url):
     try:
-        html_txt = requests.get(page_url, timeout=4).text
+        html_txt = requests.get(url, timeout=4).text
         m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']', html_txt, re.I)
         if m:
-            return urljoin(page_url, m.group(1))
+            return urljoin(url, m.group(1))
     except Exception:
         pass
     return ""
@@ -70,13 +73,13 @@ def fetch_and_generate():
             if not thumb:
                 thumb = extract_og_image(e.get("link", ""))
 
-            if thumb and '<img' not in html_raw:
+            if thumb and ('<img' not in html_raw):
                 content_html = f'<img src="{thumb}"><br>{html_raw}'
             else:
                 content_html = html_raw or e.get("link", "")
 
             items.append({
-                "title": f"{site}閂{html.unescape(e.get('title',''))}",
+                "title": f"{site}閂{html.unescape(e.get('title', ''))}",
                 "link": e.get("link", ""),
                 "pubDate": dt,
                 "description": html.unescape(BeautifulSoup(html_raw, "html.parser").get_text(" ", strip=True)),
@@ -85,23 +88,24 @@ def fetch_and_generate():
             })
 
     items.sort(key=lambda x: x["pubDate"], reverse=True)
-    return items[:100]  # 表示数は100固定
+    return items[:100]
 
-def generate_rss_to_stream(items, stream):
-    register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
-    register_namespace("dc", "http://purl.org/dc/elements/1.1/")
-
-    rss = Element("rss", version="2.0")
-    ch = SubElement(rss, "channel")
-    SubElement(ch, "title").text = "Merged RSS Feed"
+def generate_rss(items):
+    rss = Element("rss", version="2.0", attrib={
+        "xmlns:content": "http://purl.org/rss/1.0/modules/content/",
+        "xmlns:dc": "http://purl.org/dc/elements/1.1/"
+    })
+    channel = SubElement(rss, "channel")
+    SubElement(channel, "title").text = "Merged RSS Feed"
 
     for it in items:
-        i = SubElement(ch, "item")
+        i = SubElement(channel, "item")
         SubElement(i, "title").text = it["title"]
         SubElement(i, "link").text = it["link"]
         SubElement(i, "description").text = it["description"]
-        SubElement(i, "{http://purl.org/dc/elements/1.1/}date").text = it["pubDate"].isoformat()
+        SubElement(i, "dc:date").text = it["pubDate"].isoformat()
         SubElement(i, "source").text = it["site"]
-        SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
+        SubElement(i, "content:encoded").text = it["content"]
 
-    ElementTree(rss).write(stream, encoding="utf-8", xml_declaration=True)
+    return tostring(rss, encoding="utf-8", xml_declaration=True)
+
