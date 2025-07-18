@@ -63,7 +63,7 @@ def fetch_and_generate_items():
     for url in RSS_URLS:
         try:
             # feedparserにUser-Agentとタイムアウトを設定
-            feed = feedparser.parse(url, request_headers=HEADERS, timeout=10)
+            feed = feedparser.parse(url, request_headers=HEADERS)
             
             # feedparserのエラーチェック
             if feed.bozo and feed.bozo_exception:
