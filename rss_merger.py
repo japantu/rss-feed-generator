@@ -43,18 +43,26 @@ def extract_og_image(page_url):
         # タイムアウトを10秒に延長し、User-Agentを追加
         response = requests.get(page_url, headers=HEADERS, timeout=10)
         response.raise_for_status() # HTTPエラーがあれば例外を発生させる
-        soup = BeautifulSoup(response.text, "html.parser")
-        og_image_tag = soup.find("meta", property="og:image")
-        if og_image_tag and og_image_tag.get("content"):
-            img_url = og_image_tag["content"]
-            # 相対URLの場合も考慮してurljoin
-            return urljoin(page_url, img_url)
+        
+        # BeautifulSoupでの解析部分をさらにtry-exceptで囲む
+        try:
+            soup = BeautifulSoup(response.text, "html.parser")
+            og_image_tag = soup.find("meta", property="og:image")
+            if og_image_tag and og_image_tag.get("content"):
+                img_url = og_image_tag["content"]
+                # 相対URLの場合も考慮してurljoin
+                return urljoin(page_url, img_url)
+        except Exception as soup_error:
+            # BeautifulSoupの解析中にエラーが発生した場合
+            logging.error(f"BeautifulSoup parsing error for {page_url}: {soup_error}", exc_info=True)
+            return "" # 解析失敗時は空文字列を返す
+        
     except requests.exceptions.Timeout:
         logging.warning(f"Timeout when extracting OGP image from {page_url}")
     except requests.exceptions.RequestException as e:
         logging.warning(f"Request error when extracting OGP image from {page_url}: {e}")
     except Exception as e:
-        logging.error(f"Unexpected error extracting OGP image from {page_url}: {e}")
+        logging.error(f"General error in extract_og_image for {page_url}: {e}", exc_info=True)
     return ""
 
 def fetch_and_generate_items():
