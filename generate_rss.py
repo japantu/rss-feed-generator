@@ -5,9 +5,6 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from xml.etree.ElementTree import Element, SubElement, ElementTree, register_namespace
 
-register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
-register_namespace("dc", "http://purl.org/dc/elements/1.1/")
-
 RSS_URLS = [
     "http://himasoku.com/index.rdf",
     "https://hamusoku.com/index.rdf",
@@ -26,11 +23,10 @@ def to_utc(st):
 
 def extract_og_image(page_url):
     try:
-        res = requests.get(page_url, timeout=2)
-        if res.ok:
-            m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']', res.text, re.I)
-            if m:
-                return urljoin(page_url, m.group(1))
+        html_txt = requests.get(page_url, timeout=4).text
+        m = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']', html_txt, re.I)
+        if m:
+            return urljoin(page_url, m.group(1))
     except Exception:
         pass
     return ""
@@ -42,6 +38,7 @@ def fetch_and_generate():
         site = feed.feed.get("title", "Unknown Site")
 
         for e in feed.entries:
+            dt = None
             if e.get("published_parsed"):
                 dt = to_utc(e.published_parsed)
             elif e.get("updated_parsed"):
@@ -54,7 +51,8 @@ def fetch_and_generate():
                 v = e.get(fld)
                 if isinstance(v, list): v = v[0]
                 if isinstance(v, str) and "<img" in v:
-                    html_raw = v; break
+                    html_raw = v
+                    break
                 elif isinstance(v, str) and not html_raw:
                     html_raw = v
 
@@ -67,18 +65,19 @@ def fetch_and_generate():
                 thumb = e.enclosures[0]["href"]
             if not thumb and html_raw:
                 img = BeautifulSoup(html_raw, "html.parser").find("img")
-                if img and img.get("src"): thumb = img["src"]
+                if img and img.get("src"):
+                    thumb = img["src"]
             if not thumb:
                 thumb = extract_og_image(e.get("link", ""))
 
-            if thumb and ('<img' not in html_raw):
+            if thumb and '<img' not in html_raw:
                 content_html = f'<img src="{thumb}"><br>{html_raw}'
             else:
                 content_html = html_raw or e.get("link", "")
 
             items.append({
                 "title": f"{site}閂{html.unescape(e.get('title',''))}",
-                "link": e.get("link",""),
+                "link": e.get("link", ""),
                 "pubDate": dt,
                 "description": html.unescape(BeautifulSoup(html_raw, "html.parser").get_text(" ", strip=True)),
                 "content": content_html,
@@ -86,11 +85,14 @@ def fetch_and_generate():
             })
 
     items.sort(key=lambda x: x["pubDate"], reverse=True)
-    return items[:200]
+    return items[:100]  # 表示数は100固定
 
-def generate_rss(items):
+def generate_rss_to_stream(items, stream):
+    register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
+    register_namespace("dc", "http://purl.org/dc/elements/1.1/")
+
     rss = Element("rss", version="2.0")
-    ch  = SubElement(rss, "channel")
+    ch = SubElement(rss, "channel")
     SubElement(ch, "title").text = "Merged RSS Feed"
 
     for it in items:
@@ -102,7 +104,4 @@ def generate_rss(items):
         SubElement(i, "source").text = it["site"]
         SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
 
-    ElementTree(rss).write("rss_output.xml", encoding="utf-8", xml_declaration=True)
-
-if __name__ == "__main__":
-    generate_rss(fetch_and_generate())
+    ElementTree(rss).write(stream, encoding="utf-8", xml_declaration=True)
