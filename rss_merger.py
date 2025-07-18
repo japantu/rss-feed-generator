@@ -40,8 +40,8 @@ def extract_og_image(page_url):
     if not page_url:
         return ""
     try:
-        # タイムアウトを10秒に延長し、User-Agentを追加
-        response = requests.get(page_url, headers=HEADERS, timeout=10)
+        # タイムアウトを30秒に延長し、User-Agentを追加
+        response = requests.get(page_url, headers=HEADERS, timeout=30) # タイムアウトを30秒に延長
         response.raise_for_status() # HTTPエラーがあれば例外を発生させる
         
         # BeautifulSoupでの解析部分をさらにtry-exceptで囲む
