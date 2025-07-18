@@ -13,11 +13,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
 register_namespace("dc", "http://purl.org/dc/elements/1.1/")
 
+# lifehacker.jp は 429 Too Many Requests エラーが出るため一時的に除外
 RSS_URLS = [
     "http://himasoku.com/index.rdf",
     "https://hamusoku.com/index.rdf",
     "http://blog.livedoor.jp/kinisoku/index.rdf",
-    "https://www.lifehacker.jp/feed/index.xml",
+    # "https://www.lifehacker.jp/feed/index.xml", # この行をコメントアウトまたは削除
     "https://itainews.com/index.rdf",
     "http://blog.livedoor.jp/news23vip/index.rdf",
     "http://yaraon-blog.com/feed",
@@ -41,7 +42,7 @@ def extract_og_image(page_url):
         return ""
     try:
         # タイムアウトを30秒に延長し、User-Agentを追加
-        response = requests.get(page_url, headers=HEADERS, timeout=30) # タイムアウトを30秒に延長
+        response = requests.get(page_url, headers=HEADERS, timeout=30)
         response.raise_for_status() # HTTPエラーがあれば例外を発生させる
         
         # BeautifulSoupでの解析部分をさらにtry-exceptで囲む
