@@ -65,12 +65,15 @@ def fetch_and_generate_items():
             # feedparserにUser-Agentを設定 (timeoutは古いバージョンで非対応のため削除)
             feed = feedparser.parse(url, request_headers=HEADERS)
             
-            # feedparserのエラーチェック
+            # feedparserのエラーチェック (NonXMLRSSExceptionのチェックはAttributeError対策で削除)
             if feed.bozo and feed.bozo_exception:
                 logging.warning(f"RSS parsing error for {url}: {feed.bozo_exception}")
                 # エラーが深刻な場合はこのフィードをスキップ
-                if isinstance(feed.bozo_exception, feedparser.NonXMLRSSException):
-                    continue
+                # if isinstance(feed.bozo_exception, feedparser.NonXMLRSSException): # この行を削除
+                #     continue
+                # 代わりに、一般的な例外として扱い、フィードが破損している可能性があればスキップを検討
+                # ただし、現状はlogging.warningで済ませて処理を続行
+                pass
 
             site = feed.feed.get("title", "Unknown Site") # サイト名取得
 
@@ -91,7 +94,7 @@ def fetch_and_generate_items():
                     # content:encoded モジュールからの取得を試みる
                     if 'content' in e and isinstance(e['content'], list) and e['content']:
                         for c_item in e['content']:
-                            if c_item.get('type') == 'html' and c_item.get('value'):
+                            if c_item and isinstance(c_item, dict) and c_item.get('type') == 'html' and c_item.get('value'):
                                 html_raw = c_item['value']
                                 break
                     if not html_raw and e.get(fld):
