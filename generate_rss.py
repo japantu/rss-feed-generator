@@ -3,7 +3,7 @@ import feedparser, html, re, requests
 from datetime import datetime, timezone
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-from xml.etree.ElementTree import Element, SubElement, tostring, register_namespace
+from xml.etree.ElementTree import Element, SubElement, ElementTree, register_namespace
 
 register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
 register_namespace("dc", "http://purl.org/dc/elements/1.1/")
@@ -49,13 +49,13 @@ def fetch_and_generate():
                 dt = datetime.now(timezone.utc)
 
             html_raw = ""
-            for fld in ("content:encoded", "content", "summary", "description"):
-                v = e.get(fld)
-                if isinstance(v, list): v = v[0]
-                if isinstance(v, str) and "<img" in v:
-                    html_raw = v; break
-                elif isinstance(v, str) and not html_raw:
-                    html_raw = v
+            for tag in ("content:encoded", "content", "summary", "description"):
+                value = e.get(tag)
+                if isinstance(value, list): value = value[0]
+                if isinstance(value, str) and "<img" in value:
+                    html_raw = value; break
+                elif isinstance(value, str) and not html_raw:
+                    html_raw = value
 
             thumb = ""
             if "media_thumbnail" in e:
@@ -66,39 +66,25 @@ def fetch_and_generate():
                 thumb = e.enclosures[0]["href"]
             if not thumb and html_raw:
                 img = BeautifulSoup(html_raw, "html.parser").find("img")
-                if img and img.get("src"): thumb = img["src"]
+                if img and img.get("src"):
+                    thumb = img["src"]
             if not thumb:
                 thumb = extract_og_image(e.get("link", ""))
 
-            if thumb and ('<img' not in html_raw):
+            if thumb and '<img' not in html_raw:
                 content_html = f'<img src="{thumb}"><br>{html_raw}'
             else:
                 content_html = html_raw or e.get("link", "")
 
             items.append({
                 "title": f"{site}閂{html.unescape(e.get('title',''))}",
-                "link": e.get("link",""),
+                "link": e.get("link", ""),
                 "pubDate": dt,
                 "description": html.unescape(BeautifulSoup(html_raw, "html.parser").get_text(" ", strip=True)),
                 "content": content_html,
-                "site": site
+                "site": site,
+                "dc_date": dt.isoformat()
             })
 
     items.sort(key=lambda x: x["pubDate"], reverse=True)
     return items[:100]
-
-def generate_rss(items):
-    rss = Element("rss", version="2.0")
-    ch  = SubElement(rss, "channel")
-    SubElement(ch, "title").text = "Merged RSS Feed"
-
-    for it in items:
-        i = SubElement(ch, "item")
-        SubElement(i, "title").text = it["title"]
-        SubElement(i, "link").text = it["link"]
-        SubElement(i, "description").text = it["description"]
-        SubElement(i, "{http://purl.org/dc/elements/1.1/}date").text = it["pubDate"].isoformat()
-        SubElement(i, "source").text = it["site"]
-        SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
-
-    return tostring(rss, encoding="utf-8", xml_declaration=True)
