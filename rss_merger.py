@@ -62,7 +62,7 @@ def fetch_and_generate_items():
     items = []
     for url in RSS_URLS:
         try:
-            # feedparserにUser-Agentとタイムアウトを設定
+            # feedparserにUser-Agentを設定 (timeoutは古いバージョンで非対応のため削除)
             feed = feedparser.parse(url, request_headers=HEADERS)
             
             # feedparserのエラーチェック
@@ -161,7 +161,7 @@ def generate_rss_xml_string(items, base_url=""):
 
     ch = SubElement(rss, "channel")
     SubElement(ch, "title").text = "Merged RSS Feed"
-    SubElement(ch, "link").text = base_url if base_url else "http://example.com/unified_rss" # 配信URL
+    SubElement(ch, "link").text = base_url if base_url else "http://example.com/" # 配信URLをルートに合わせる
     SubElement(ch, "description").text = "複数のRSSフィードを統合"
     SubElement(ch, "pubDate").text = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
 
@@ -191,7 +191,7 @@ from flask import Flask, Response, request
 
 app = Flask(__name__)
 
-@app.route("/unified_rss", methods=["GET", "HEAD"]) # KLWPからアクセスしやすいパス
+@app.route("/", methods=["GET", "HEAD"]) # ルートパスでRSSを配信
 def serve_unified_rss():
     if request.method == "HEAD":
         return Response("OK", status=200)
@@ -199,7 +199,7 @@ def serve_unified_rss():
     logging.info("Fetching and generating RSS feed...")
     items = fetch_and_generate_items() # RSSフィードをフェッチし処理
     # Renderで動作する際のホストURLを渡す
-    base_url = request.url_root if request.url_root else "http://example.com/unified_rss"
+    base_url = request.url_root if request.url_root else "http://example.com/" # ここもルートに合わせる
     xml_string = generate_rss_xml_string(items, base_url=base_url) # XML文字列を生成
     logging.info("RSS feed generated successfully.")
 
