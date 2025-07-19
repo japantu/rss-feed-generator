@@ -13,18 +13,18 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
 register_namespace("dc", "http://purl.org/dc/elements/1.1/")
 
-# lifehacker.jp は 429 Too Many Requests エラーが出るため一時的に除外
+# lifehacker.jp, 4gamer.net, gizmodo.jp はリクエスト制限やタイムアウトが発生しやすいため一時的に除外
 RSS_URLS = [
     "http://himasoku.com/index.rdf",
     "https://hamusoku.com/index.rdf",
     "http://blog.livedoor.jp/kinisoku/index.rdf",
-    # "https://www.lifehacker.jp/feed/index.xml", # この行をコメントアウトまたは削除
+    # "https://www.lifehacker.jp/feed/index.xml",
     "https://itainews.com/index.rdf",
     "http://blog.livedoor.jp/news23vip/index.rdf",
     "http://yaraon-blog.com/feed",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf",
-    "https://www.4gamer.net/rss/index.xml",
-    "https://www.gizmodo.jp/atom.xml",
+    # "https://www.4gamer.net/rss/index.xml",
+    # "https://www.gizmodo.jp/atom.xml",
 ]
 
 # HTTPリクエストヘッダー
@@ -100,7 +100,6 @@ def fetch_and_generate_items():
                 html_raw = ""
                 # "content:encoded" > "content" > "summary" > "description" の順に内容をチェック
                 for fld in ("content", "summary", "description"): # content:encoded はXMLツリーで直接アクセス
-                    # content:encoded モジュールからの取得を試みる
                     if 'content' in e and isinstance(e['content'], list) and e['content']:
                         for c_item in e['content']:
                             if c_item and isinstance(c_item, dict) and c_item.get('type') == 'html' and c_item.get('value'):
