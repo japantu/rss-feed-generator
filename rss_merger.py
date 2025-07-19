@@ -165,10 +165,13 @@ def fetch_and_generate_items():
 
 def generate_rss_xml_string(items, base_url=""):
     """記事アイテムリストからRSS XML文字列を生成"""
-    rss = Element("rss", version="2.0")
-    # 名前空間をルート要素に明示的に定義
-    rss.set("xmlns:content", "http://purl.org/rss/1.0/modules/content/")
-    rss.set("xmlns:dc", "http://purl.org/dc/elements/1.1/")
+    # 属性をまとめて定義
+    rss_attribs = {
+        "version": "2.0",
+        "xmlns:content": "http://purl.org/rss/1.0/modules/content/",
+        "xmlns:dc": "http://purl.org/dc/elements/1.1/"
+    }
+    rss = Element("rss", attrib=rss_attribs) # ここで全ての属性をまとめて設定
 
     ch = SubElement(rss, "channel")
     SubElement(ch, "title").text = "Merged RSS Feed"
@@ -189,10 +192,8 @@ def generate_rss_xml_string(items, base_url=""):
         # content:encoded に HTML 本文
         SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
 
-    # ElementTreeをStringIOで文字列化して返す
     from io import StringIO
     f = StringIO()
-    # xml_declaration=True は文字列化の際に自動で追加されるはずだが明示的に
     ElementTree(rss).write(f, encoding="unicode", xml_declaration=True)
     return f.getvalue()
 
