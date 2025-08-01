@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write # この行を追加
+  contents: write
 
 jobs:
   build:
@@ -42,3 +42,5 @@ jobs:
           commit_message: "Update unified RSS feed"
           # publicフォルダ内のrss_output.xmlファイルのみをコミット対象にする
           file_pattern: "public/rss_output.xml"
+          # この行を追加
+          pull_options: '--ff'
