@@ -10,7 +10,7 @@ import os # ファイル操作用
 # ロギング設定
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# 名前空間の登録（重複防止）
+# 名前空間の登録
 register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
 register_namespace("dc", "http://purl.org/dc/elements/1.1/")
 
@@ -145,7 +145,6 @@ def fetch_and_generate_items():
 
 def generate_rss_xml_string(items, base_url=""):
     """記事アイテムリストからRSS XML文字列を生成"""
-    # 変更点: attribsからxmlns属性を削除し、versionのみにする
     rss_attribs = {
         "version": "2.0"
     }
@@ -174,6 +173,7 @@ def generate_rss_xml_string(items, base_url=""):
 
 if __name__ == "__main__":
     logging.info("Starting RSS feed generation for file output...")
+    # 変更点: RenderのURLにファイル名を追加
     base_url = "https://rss-x2xp.onrender.com/rss_output.xml" 
 
     items = fetch_and_generate_items()
