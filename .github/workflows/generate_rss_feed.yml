@@ -2,12 +2,14 @@
 name: Generate and Deploy RSS Feed
 
 # スケジュールで実行 (ここでは30分に1回)
-# `cron: '*/15 * * * *'` で15分に1回実行することも可能
 on:
   schedule:
     - cron: '*/20 * * * *' # 20分に1回実行
   # 手動での実行も可能にする
   workflow_dispatch:
+
+permissions:
+  contents: write # この行を追加
 
 jobs:
   build:
