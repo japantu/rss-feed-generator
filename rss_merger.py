@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, Response, send_file, request
+from flask import Flask, Response, request
 import os
 
 app = Flask(__name__)
@@ -14,9 +14,12 @@ def serve_rss():
     if not os.path.exists(file_path):
         return Response("RSS feed not found.", status=503, mimetype="text/plain")
 
-    # 変更点: as_attachment=False を追加
-    # これにより、ファイルをダウンロードせず、ブラウザに直接表示させます。
-    return send_file(file_path, mimetype="application/rss+xml", as_attachment=False)
+    # 変更点: send_fileを使わず、ファイルの内容を直接読み込む
+    with open(file_path, "r", encoding="utf-8") as f:
+        xml_content = f.read()
+
+    # mimetypeとcharsetを明示的に指定してResponseを返す
+    return Response(xml_content, mimetype="application/rss+xml; charset=utf-8")
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
