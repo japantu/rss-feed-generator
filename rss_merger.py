@@ -4,22 +4,27 @@ import os
 
 app = Flask(__name__)
 
-# 変更点: ルートを '/rss_output.xml' に戻す
-@app.route("/rss_output.xml", methods=["GET", "HEAD"])
+# ルーティングをルートURL ('/') に設定
+@app.route("/", methods=["GET", "HEAD"])
 def serve_rss():
     if request.method == "HEAD":
         return Response("OK", status=200)
 
+    # publicフォルダ内のrss_output.xmlへのパス
     file_path = os.path.join(os.getcwd(), 'public', 'rss_output.xml')
     
+    # ファイルの存在を確認
     if not os.path.exists(file_path):
         return Response("RSS feed not found.", status=503, mimetype="text/plain")
 
-    # ファイルの内容を直接読み込み、Responseオブジェクトとして返す
-    with open(file_path, "r", encoding="utf-8") as f:
-        xml_content = f.read()
+    # ファイルの内容を直接読み込み
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            xml_content = f.read()
+    except Exception as e:
+        return Response(f"Error reading file: {str(e)}", status=500, mimetype="text/plain")
 
-    # mimetypeとcharsetを明示的に指定して、ブラウザにXMLとして表示させる
+    # MIMEタイプを明示的に指定してレスポンスとして返す
     return Response(xml_content, mimetype="application/rss+xml; charset=utf-8")
 
 if __name__ == "__main__":
