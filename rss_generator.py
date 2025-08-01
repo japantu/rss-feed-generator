@@ -42,9 +42,8 @@ def extract_og_image(page_url):
     if not page_url:
         return ""
     try:
-        # タイムアウトを30秒に延長し、User-Agentを追加
         response = requests.get(page_url, headers=HEADERS, timeout=30)
-        response.raise_for_status() # HTTPエラーがあれば例外を発生させる
+        response.raise_for_status()
         
         try:
             soup = BeautifulSoup(response.text, "html.parser")
@@ -75,7 +74,7 @@ def fetch_and_generate_items():
                 logging.warning(f"RSS parsing error for {url}: {feed.bozo_exception}")
                 pass
 
-            site = feed.feed.get("title", "Unknown Site") # サイト名取得
+            site = feed.feed.get("title", "Unknown Site")
 
             for e in feed.entries:
                 dt = None
@@ -146,16 +145,15 @@ def fetch_and_generate_items():
 
 def generate_rss_xml_string(items, base_url=""):
     """記事アイテムリストからRSS XML文字列を生成"""
+    # 変更点: attribsからxmlns属性を削除し、versionのみにする
     rss_attribs = {
-        "version": "2.0",
-        "xmlns:content": "http://purl.org/rss/1.0/modules/content/",
-        "xmlns:dc": "http://purl.org/dc/elements/1.1/"
+        "version": "2.0"
     }
     rss = Element("rss", attrib=rss_attribs)
 
     ch = SubElement(rss, "channel")
     SubElement(ch, "title").text = "Merged RSS Feed"
-    SubElement(ch, "link").text = base_url # ここが設定されるURLになります
+    SubElement(ch, "link").text = base_url
     SubElement(ch, "description").text = "複数のRSSフィードを統合"
     SubElement(ch, "lastBuildDate").text = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
 
@@ -176,18 +174,14 @@ def generate_rss_xml_string(items, base_url=""):
 
 if __name__ == "__main__":
     logging.info("Starting RSS feed generation for file output...")
-    # RenderのURLとファイル名を結合した完全なURLを設定
-    # GitHub Actionsで生成されるXMLファイルが、このURLで配信されることを想定
     base_url = "https://rss-x2xp.onrender.com/rss_output.xml" 
 
     items = fetch_and_generate_items()
     xml_string = generate_rss_xml_string(items, base_url=base_url)
     
-    # 出力ディレクトリが存在しない場合は作成
     output_dir = "public" 
     os.makedirs(output_dir, exist_ok=True)
     
-    # XMLファイルを指定のディレクトリに保存
     output_filepath = os.path.join(output_dir, "rss_output.xml")
     with open(output_filepath, "w", encoding="utf-8") as f:
         f.write(xml_string)

@@ -9,17 +9,14 @@ def serve_rss():
     if request.method == "HEAD":
         return Response("OK", status=200)
 
-    # GitHub Actionsが生成したXMLファイルを返す
-    # ファイルのパスは `public/rss_output.xml`
     file_path = os.path.join(os.getcwd(), 'public', 'rss_output.xml')
-
-    # ファイルが存在するか確認
+    
     if not os.path.exists(file_path):
         return Response("RSS feed not found.", status=503, mimetype="text/plain")
 
-    # ファイルを送信
-    return send_file(file_path, mimetype="application/rss+xml")
+    # 変更点: as_attachment=False を追加
+    # これにより、ファイルをダウンロードせず、ブラウザに直接表示させます。
+    return send_file(file_path, mimetype="application/rss+xml", as_attachment=False)
 
 if __name__ == "__main__":
-    # ローカルテスト用
     app.run(host='0.0.0.0', port=5000)
