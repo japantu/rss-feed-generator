@@ -4,7 +4,8 @@ import os
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET", "HEAD"])
+# 変更点: ルートを '/rss_output.xml' に戻す
+@app.route("/rss_output.xml", methods=["GET", "HEAD"])
 def serve_rss():
     if request.method == "HEAD":
         return Response("OK", status=200)
@@ -14,7 +15,7 @@ def serve_rss():
     if not os.path.exists(file_path):
         return Response("RSS feed not found.", status=503, mimetype="text/plain")
 
-    # 変更点: ファイルの内容を直接読み込み、Responseオブジェクトとして返す
+    # ファイルの内容を直接読み込み、Responseオブジェクトとして返す
     with open(file_path, "r", encoding="utf-8") as f:
         xml_content = f.read()
 
