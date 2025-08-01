@@ -173,8 +173,8 @@ def generate_rss_xml_string(items, base_url=""):
 
 if __name__ == "__main__":
     logging.info("Starting RSS feed generation for file output...")
-    # 変更点: RenderのURLにファイル名を追加
-    base_url = "https://rss-x2xp.onrender.com/rss_output.xml" 
+    # 変更点: RenderのURLをルートURLに変更
+    base_url = "https://rss-x2xp.onrender.com/"
 
     items = fetch_and_generate_items()
     xml_string = generate_rss_xml_string(items, base_url=base_url)
