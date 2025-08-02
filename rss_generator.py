@@ -8,7 +8,7 @@ import html
 import ssl
 import certifi
 
-# RSSフィードを生成するURLのリスト
+# RSSフィードを取得するURLのリスト
 RSS_URLS = [
     'https://www.lifehacker.jp/feed/index.xml',
     'https://www.gizmodo.jp/feed/index.xml',
@@ -23,11 +23,10 @@ RSS_URLS = [
     'https://wired.jp/feed/'
 ]
 
-# SSLContextを設定して証明書エラーを回避
+# SSL証明書のエラーを回避するための設定
 ssl_context = ssl.create_default_context(cafile=certifi.where())
 
 async def fetch_feed(session, url):
-    """指定されたURLからRSSフィードを非同期で取得する"""
     try:
         async with session.get(url, timeout=30, ssl=ssl_context) as response:
             return await response.text()
@@ -36,7 +35,6 @@ async def fetch_feed(session, url):
         return None
 
 def parse_feed(xml_text, url):
-    """取得したXMLテキストをパースする"""
     if xml_text:
         try:
             return feedparser.parse(xml_text)
@@ -45,33 +43,29 @@ def parse_feed(xml_text, url):
     return None
 
 async def main():
-    """メイン処理"""
     print("INFO - Starting RSS feed generation for file output...")
 
-    # フィードジェネレータの初期設定
     fg = FeedGenerator()
     fg.id('http://example.com/rss_output.xml')
     fg.title('RSS Feed Generator')
     fg.author({'name': 'RSS Generator', 'email': 'info@example.com'})
     fg.link(href='http://example.com', rel='alternate')
     fg.language('ja')
+    fg.description("Generated RSS feed combining multiple sources.")
 
-    # 非同期で全てのRSSフィードを取得
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=ssl_context)) as session:
         tasks = [fetch_feed(session, url) for url in RSS_URLS]
         xml_texts = await asyncio.gather(*tasks)
 
-    # 取得したフィードをパースし、新しいフィードに結合
     all_entries = []
     for url, xml_text in zip(RSS_URLS, xml_texts):
         feed = parse_feed(xml_text, url)
         if feed:
             all_entries.extend(feed.entries)
 
-    # 日付でソート
-    all_entries.sort(key=lambda entry: getattr(entry, 'published_parsed', None) or (1970,1,1,0,0,0), reverse=True)
+    # 公開日時でソート（古い記事を除外）
+    all_entries.sort(key=lambda entry: getattr(entry, 'published_parsed', None) or (1970, 1, 1, 0, 0, 0), reverse=True)
 
-    # 重複エントリを除外
     seen_links = set()
     unique_entries = []
     for entry in all_entries:
@@ -80,23 +74,26 @@ async def main():
             unique_entries.append(entry)
             seen_links.add(link)
 
-    # 最新20件のエントリを新しいフィードに追加
     for entry in unique_entries[:20]:
         fe = fg.add_entry()
         fe.id(entry.link)
         fe.title(html.unescape(entry.title))
         fe.link(href=entry.link, rel='alternate')
 
-        # published_parsedが存在しない場合は現在日時を使用
-        published_date = getattr(entry, 'published_parsed', None)
-        if published_date:
-            fe.published(datetime(*published_date[:6], tzinfo=timezone.utc))
+        # published_parsedがある場合のみ設定
+        published = getattr(entry, 'published_parsed', None)
+        if published:
+            pub_date = datetime(*published[:6], tzinfo=timezone.utc)
+            fe.published(pub_date)
+            fe.dc('date', pub_date.isoformat())
+        else:
+            now = datetime.now(timezone.utc)
+            fe.published(now)
+            fe.dc('date', now.isoformat())
 
-        # 記事の内容を取得し、descriptionがなくてもエラーにならないように修正
         content = getattr(entry, 'summary', '') or getattr(entry, 'content', [{'value': ''}])[0]['value']
         fe.description(html.unescape(content or ''))
 
-    # RSSフィードをXML形式に変換し、ファイルに保存
     output_dir = "public"
     os.makedirs(output_dir, exist_ok=True)
     with open(os.path.join(output_dir, "rss_output.xml"), "w", encoding="utf-8") as f:
