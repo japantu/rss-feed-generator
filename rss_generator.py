@@ -24,7 +24,8 @@ RSS_URLS = [
 async def fetch_feed(session, url):
     """指定されたURLからRSSフィードを非同期で取得する"""
     try:
-        async with session.get(url, timeout=30) as response:
+        # SSL証明書のエラーを無視
+        async with session.get(url, timeout=30, ssl=False) as response:
             return await response.text()
     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
         print(f"WARNING - RSS fetching error for {url}: {e}")
