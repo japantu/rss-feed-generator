@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build and run Docker container
-        run: |
-          docker build -t rss-generator .
-          docker run --rm -v $(pwd):/app rss-generator
+      - name: Build Docker image
+        run: docker build -t rss-generator .
+      - name: Run container and update RSS
+        run: docker run --rm -v $(pwd):/app rss-generator
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
