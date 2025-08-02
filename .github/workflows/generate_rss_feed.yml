@@ -13,14 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build Docker image
-        run: docker build -t rss-generator .
-      - name: Run container and update RSS
-        run: docker run --rm -v $(pwd):/app rss-generator
+      - name: Build and run Docker container
+        run: |
+          docker build . -t rss-generator
+          docker run --rm -v ${{ github.workspace }}:/app rss-generator
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/rss_output.xml
-          git diff-index --quiet HEAD || git commit -m "Update RSS feed"
-          git push
+          git diff --quiet --exit-code || (git commit -m "Update RSS feed" && git push)
