@@ -1,46 +1,22 @@
-# RSSフィードを定期的に生成・更新するGitHub Actions
-name: Generate and Deploy RSS Feed
+name: Update RSS Feed
 
-# スケジュールで実行 (ここでは30分に1回)
 on:
   schedule:
-    - cron: '0 0-17,22-23 * * *' # 毎時0分に1回実行ただし、深夜3～6時は除く。世界標準時間で設定。
-  # 手動での実行も可能にする
-  workflow_dispatch:
-
-permissions:
-  contents: write
+    - cron: '*/5 * * * *'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 1. リポジトリをチェックアウト
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # 2. Pythonのセットアップ
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      # 3. 依存関係のインストール
-      - name: Install dependencies
+      - uses: actions/checkout@v3
+      - name: Build and run Docker container
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      
-      # 4. RSSフィード生成スクリプトを実行
-      - name: Generate RSS feed
-        run: python rss_generator.py
-
-      # 5. 生成されたファイルをGitでプッシュ
-      - name: Commit and push changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "Update unified RSS feed"
-          # publicフォルダ内のrss_output.xmlファイルのみをコミット対象にする
-          file_pattern: "public/rss_output.xml"
-          # この行を追加
-          pull_options: '--ff'
+          docker build -t rss-generator .
+          docker run --rm -v $(pwd):/app rss-generator
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/rss_output.xml
+          git diff-index --quiet HEAD || git commit -m "Update RSS feed"
+          git push
