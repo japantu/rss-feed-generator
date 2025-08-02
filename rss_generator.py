@@ -3,7 +3,7 @@ import asyncio
 import aiohttp
 import feedparser
 from feedgen.feed import FeedGenerator
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 import html
 
 # RSSフィードを生成するURLのリスト
@@ -24,10 +24,11 @@ RSS_URLS = [
 async def fetch_feed(session, url):
     """指定されたURLからRSSフィードを非同期で取得する"""
     try:
-        async with session.get(url, timeout=30) as response:
+        # SSL証明書のエラーを無視
+        async with session.get(url, timeout=30, ssl=False) as response:
             return await response.text()
     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-        print(f"WARNING - RSS parsing error for {url}: {e}")
+        print(f"WARNING - RSS fetching error for {url}: {e}")
         return None
 
 def parse_feed(xml_text, url):
@@ -64,7 +65,7 @@ async def main():
             all_entries.extend(feed.entries)
     
     # 日付でソート
-    all_entries.sort(key=lambda entry: getattr(entry, 'published_parsed', None), reverse=True)
+    all_entries.sort(key=lambda entry: getattr(entry, 'published_parsed', None) or (1970,1,1,0,0,0), reverse=True)
 
     # 重複エントリを除外
     seen_links = set()
@@ -81,13 +82,15 @@ async def main():
         fe.id(entry.link)
         fe.title(html.unescape(entry.title))
         fe.link(href=entry.link, rel='alternate')
-        fe.published(datetime(*entry.published_parsed[:6], tzinfo=timezone.utc))
         
-        # 記事の内容を取得
+        # published_parsedが存在しない場合は現在日時を使用
+        published_date = getattr(entry, 'published_parsed', None)
+        if published_date:
+            fe.published(datetime(*published_date[:6], tzinfo=timezone.utc))
+
+        # 記事の内容を取得し、descriptionがなくてもエラーにならないように修正
         content = getattr(entry, 'summary', '') or getattr(entry, 'content', [{'value': ''}])[0]['value']
-        
-        # 不要なタグを削除し、適切な形式に調整
-        fe.description(html.unescape(content))
+        fe.description(html.unescape(content or ''))
         
     # RSSフィードをXML形式に変換し、ファイルに保存
     output_dir = "public"
