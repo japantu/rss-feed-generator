@@ -5,6 +5,8 @@ import feedparser
 from feedgen.feed import FeedGenerator
 from datetime import datetime, timezone
 import html
+import ssl
+import certifi
 
 # RSSフィードを生成するURLのリスト
 RSS_URLS = [
@@ -21,11 +23,13 @@ RSS_URLS = [
     'https://wired.jp/feed/'
 ]
 
+# SSLContextを設定して証明書エラーを回避
+ssl_context = ssl.create_default_context(cafile=certifi.where())
+
 async def fetch_feed(session, url):
     """指定されたURLからRSSフィードを非同期で取得する"""
     try:
-        # SSL証明書のエラーを無視
-        async with session.get(url, timeout=30, ssl=False) as response:
+        async with session.get(url, timeout=30, ssl=ssl_context) as response:
             return await response.text()
     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
         print(f"WARNING - RSS fetching error for {url}: {e}")
@@ -53,7 +57,7 @@ async def main():
     fg.language('ja')
 
     # 非同期で全てのRSSフィードを取得
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=ssl_context)) as session:
         tasks = [fetch_feed(session, url) for url in RSS_URLS]
         xml_texts = await asyncio.gather(*tasks)
 
@@ -63,7 +67,7 @@ async def main():
         feed = parse_feed(xml_text, url)
         if feed:
             all_entries.extend(feed.entries)
-    
+
     # 日付でソート
     all_entries.sort(key=lambda entry: getattr(entry, 'published_parsed', None) or (1970,1,1,0,0,0), reverse=True)
 
@@ -82,7 +86,7 @@ async def main():
         fe.id(entry.link)
         fe.title(html.unescape(entry.title))
         fe.link(href=entry.link, rel='alternate')
-        
+
         # published_parsedが存在しない場合は現在日時を使用
         published_date = getattr(entry, 'published_parsed', None)
         if published_date:
@@ -91,7 +95,7 @@ async def main():
         # 記事の内容を取得し、descriptionがなくてもエラーにならないように修正
         content = getattr(entry, 'summary', '') or getattr(entry, 'content', [{'value': ''}])[0]['value']
         fe.description(html.unescape(content or ''))
-        
+
     # RSSフィードをXML形式に変換し、ファイルに保存
     output_dir = "public"
     os.makedirs(output_dir, exist_ok=True)
