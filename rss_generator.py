@@ -53,7 +53,7 @@ async def main():
     fg.language('ja')
 
     # 非同期で全てのRSSフィードを取得
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         tasks = [fetch_feed(session, url) for url in RSS_URLS]
         xml_texts = await asyncio.gather(*tasks)
 
