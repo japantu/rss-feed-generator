@@ -13,10 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build and run Docker container
+      - name: Cache dependencies
+        id: cache-deps
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
         run: |
-          docker build . -t rss-generator
-          docker run --rm -v ${{ github.workspace }}:/app rss-generator
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run rss_generator
+        run: python rss_generator.py
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
