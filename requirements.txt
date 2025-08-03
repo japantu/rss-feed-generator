@@ -1,7 +1,4 @@
 feedparser
 feedgen
-requests
 aiohttp
 certifi
-flask
-gunicorn
