@@ -1,6 +1,5 @@
 feedparser
-feedgen
 requests
-certifi
-flask
+beautifulsoup4
+Flask
 gunicorn
