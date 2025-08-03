@@ -1,4 +1,3 @@
 feedparser
 feedgen
-aiohttp
-certifi
+requests
