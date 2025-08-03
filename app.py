@@ -4,7 +4,7 @@ app = Flask(__name__, static_folder='public', static_url_path='/')
 
 @app.route('/')
 def home():
-    return send_from_directory(app.static_folder, 'rss_output.xml')
+    return send_from_directory(app.static_folder, 'rss_output.xml', mimetype='application/rss+xml')
 
 @app.route('/<path:filename>')
 def serve_static(filename):
