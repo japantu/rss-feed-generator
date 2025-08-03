@@ -2528,7 +2528,7 @@
       "content": "本日オープンした「4GamerGameShow2025」特設コーナーでは，プラットフォームの拡大を図るタクティカルシューター，素浪人から成り上がる戦国シミュレータ，スマホで復活したあのMMORPGスマホで復活したあのMMORPGなど，1人でもみんなでも楽しめる今夏の注目作品を一挙紹介！",
       "site": "4Gamer.net − 最新記事",
       "has_image": false,
-      "processed_at": "2025-08-03T20:35:11.409556"
+      "processed_at": "2025-08-03T20:55:44.255261"
     },
     "https://www.4gamer.net/games/860/G086013/20250801030/": {
       "title": "4Gamer.net − 最新記事閂アクアプラス作品のキャラが集結する2D対戦格ゲー「AQUAPAZZA」，PC版を9月25日に発売。PC版「うたわれるもの斬」は10月23日発売",
@@ -3239,6 +3239,16 @@
       "site": "4Gamer.net − 最新記事",
       "has_image": true,
       "processed_at": "2025-08-03T20:35:11.409314"
+    },
+    "https://www.4gamer.net/games/649/G064915/20250804004/": {
+      "title": "4Gamer.net − 最新記事閂［EVO2025］「餓狼伝説 City of the Wolves」，コラボ参戦キャラクターのケンは本日9：00に配信",
+      "link": "https://www.4gamer.net/games/649/G064915/20250804004/",
+      "pubDate": "2025-08-03T20:47:38+00:00",
+      "description": "SNKは本日（2025年8月4日），「餓狼伝説CityoftheWolves」の新規キャラクター，ケンを本日9：00に配信開始すると発表した。ケンは「ストリートファイター」シリーズから参戦するコラボキャラで，このあと間もなくの配信となるようだ。",
+      "content": "<img src=\"https://www.4gamer.net/games/649/G064915/20250804004/SS/003.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>SNKは本日（2025年8月4日），「餓狼伝説CityoftheWolves」の新規キャラクター，ケンを本日9：00に配信開始すると発表した。ケンは「ストリートファイター」シリーズから参戦するコラボキャラで，このあと間もなくの配信となるようだ。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-03T20:55:44.254972"
     }
   },
   "og_images": {
@@ -3408,7 +3418,8 @@
     "https://itainews.com/archives/2051567.html": "https://livedoor.blogimg.jp/dqnplus/imgs/0/c/0ce2680e-s.png",
     "https://www.4gamer.net/games/916/G091625/20250804003/": "https://www.4gamer.net/games/916/G091625/20250804003/SS/005.jpg",
     "https://www.4gamer.net/games/527/G052700/20250804002/": "https://www.4gamer.net/games/527/G052700/20250804002/SS/002.jpg",
-    "https://www.4gamer.net/games/527/G052700/20250804001/": "https://www.4gamer.net/games/527/G052700/20250804001/SS/004.jpg"
+    "https://www.4gamer.net/games/527/G052700/20250804001/": "https://www.4gamer.net/games/527/G052700/20250804001/SS/004.jpg",
+    "https://www.4gamer.net/games/649/G064915/20250804004/": "https://www.4gamer.net/games/649/G064915/20250804004/SS/003.jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "a6d1f154122b9b2b10d2fda11351b175",
@@ -3420,7 +3431,7 @@
     "https://www.lifehacker.jp/feed/index.xml": "e84bca19071ae2e7e2516fa35170a308",
     "https://itainews.com/index.rdf": "acc058c33c9227cfbc7306e9335f1cea",
     "https://www.gizmodo.jp/atom.xml": "a9b0c93f1d259455d47e1b778a8b222c",
-    "https://www.4gamer.net/rss/index.xml": "3e6fe63e80f2681a3af3d32136110634",
+    "https://www.4gamer.net/rss/index.xml": "cc3428750e0e655cb6b283d8978dade9",
     "https://daily-gadget.net/feed/": "a7aa29e8bd7fe7cffcadce08e3b99a9a"
   }
 }
