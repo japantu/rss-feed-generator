@@ -2,8 +2,12 @@ name: Update RSS Feed
 
 on:
   schedule:
-    # 5分おきに実行
-    - cron: '*/5 * * * *'
+    # 日中（6時-24時）は10分おき
+    - cron: '*/10 6-23 * * *'
+    # 深夜（1時-5時）は30分おき  
+    - cron: '*/30 1-5 * * *'
+    # 0時台は15分おき（中間設定）
+    - cron: '*/15 0 * * *'
   workflow_dispatch:
 
 permissions:
@@ -12,7 +16,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 3  # 3分でタイムアウト
+    timeout-minutes: 4  # 少し余裕を持たせて4分
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,14 +33,27 @@ jobs:
           path: |
             ~/.cache/pip
             rss_cache.json
-          key: ${{ runner.os }}-rss-optimized-${{ hashFiles('requirements.txt') }}-${{ hashFiles('rss_cache.json') }}
+          key: ${{ runner.os }}-rss-30day-${{ hashFiles('requirements.txt') }}-${{ hashFiles('rss_cache.json') }}
           restore-keys: |
-            ${{ runner.os }}-rss-optimized-${{ hashFiles('requirements.txt') }}-
-            ${{ runner.os }}-rss-optimized-
+            ${{ runner.os }}-rss-30day-${{ hashFiles('requirements.txt') }}-
+            ${{ runner.os }}-rss-30day-
             
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+          
+      - name: Display current time and schedule info
+        run: |
+          echo "Current time (UTC): $(date -u +'%Y-%m-%d %H:%M:%S')"
+          echo "Current time (JST): $(TZ='Asia/Tokyo' date +'%Y-%m-%d %H:%M:%S')"
+          current_hour=$(date -u +'%H')
+          if [ $current_hour -ge 6 ] && [ $current_hour -le 23 ]; then
+            echo "Schedule: Day time (10min interval)"
+          elif [ $current_hour -ge 1 ] && [ $current_hour -le 5 ]; then
+            echo "Schedule: Night time (30min interval)"
+          else
+            echo "Schedule: Midnight (15min interval)"
+          fi
           
       - name: Run optimized RSS generator
         run: |
@@ -54,7 +71,15 @@ jobs:
             echo "No changes detected - skipping commit"
           else
             echo "Changes detected - committing updates"
-            git commit -m "RSS更新 $(date +'%m/%d %H:%M')"
+            current_hour=$(date -u +'%H')
+            if [ $current_hour -ge 6 ] && [ $current_hour -le 23 ]; then
+              schedule_type="日中"
+            elif [ $current_hour -ge 1 ] && [ $current_hour -le 5 ]; then
+              schedule_type="深夜"
+            else
+              schedule_type="深夜"
+            fi
+            git commit -m "RSS更新[${schedule_type}] $(TZ='Asia/Tokyo' date +'%m/%d %H:%M')"
             git push
             echo "Successfully pushed updates"
           fi
