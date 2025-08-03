@@ -29,8 +29,8 @@ RSS_URLS = [
     "http://yaraon-blog.com/feed",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf",
     "https://www.4gamer.net/rss/index.xml",
-    "https://daily-gadget.net/feed/",
     "https://www.gizmodo.jp/atom.xml",
+    "https://daily-gadget.net/feed/",
 ]
 
 # HTTPリクエストヘッダー
@@ -242,12 +242,25 @@ def fetch_single_rss_optimized(url, cache):
     start_time = time.time()
     
     try:
+        logging.info(f"Fetching RSS from: {url}")
         feed = feedparser.parse(url, request_headers=HEADERS)
         
         if feed.bozo and feed.bozo_exception:
             logging.warning(f"RSS parsing error for {url}: {feed.bozo_exception}")
 
         site = feed.feed.get("title", "Unknown Site")
+        logging.info(f"Site title: {site} ({len(feed.entries)} entries)")
+        
+        # daily-gadget.net特有のデバッグ情報
+        if 'daily-gadget' in url:
+            logging.info(f"Daily-gadget debug info:")
+            logging.info(f"  Feed version: {feed.version}")
+            logging.info(f"  Feed entries count: {len(feed.entries)}")
+            if feed.entries:
+                first_entry = feed.entries[0]
+                logging.info(f"  First entry title: {first_entry.get('title', 'No title')}")
+                logging.info(f"  First entry link: {first_entry.get('link', 'No link')}")
+        
         current_hash = get_feed_hash(feed.entries)
         previous_hash = cache.get("feed_hashes", {}).get(url)
         
@@ -269,6 +282,7 @@ def fetch_single_rss_optimized(url, cache):
             for entry in feed.entries:
                 article_url = entry.get("link", "")
                 if not article_url:
+                    logging.warning(f"Entry without link found in {url}: {entry.get('title', 'No title')}")
                     continue
                 
                 # 既存記事があり、画像も取得済みの場合はキャッシュ使用
@@ -278,17 +292,22 @@ def fetch_single_rss_optimized(url, cache):
                     cached_count += 1
                 else:
                     # 新規処理
-                    processed_item = process_single_entry(entry, site, cache)
-                    items.append(processed_item)
-                    new_count += 1
-                    
-                    # OG画像を取得した場合のカウント
-                    if not existing_article or not existing_article.get("has_image"):
-                        if processed_item.get("has_image"):
-                            og_fetch_count += 1
-                    
-                    # キャッシュに保存
-                    cache.setdefault("articles", {})[article_url] = processed_item
+                    try:
+                        processed_item = process_single_entry(entry, site, cache)
+                        items.append(processed_item)
+                        new_count += 1
+                        
+                        # OG画像を取得した場合のカウント
+                        if not existing_article or not existing_article.get("has_image"):
+                            if processed_item.get("has_image"):
+                                og_fetch_count += 1
+                        
+                        # キャッシュに保存
+                        cache.setdefault("articles", {})[article_url] = processed_item
+                        
+                    except Exception as entry_error:
+                        logging.error(f"Failed to process entry from {url}: {entry.get('title', 'Unknown')}: {entry_error}")
+                        continue
             
             # フィードハッシュ更新
             cache.setdefault("feed_hashes", {})[url] = current_hash
