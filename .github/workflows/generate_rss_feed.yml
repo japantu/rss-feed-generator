@@ -2,7 +2,7 @@ name: Update RSS Feed
 
 on:
   schedule:
-    - cron: '0 17-23,0-15 * * *'
+    - cron: '0 21-23,0-16 * * *'
   workflow_dispatch:
 
 permissions:
@@ -28,8 +28,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-      - name: Run rss_merger
-        run: python rss_merger.py
+      - name: Run rss_generator
+        run: python rss_generator.py
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
