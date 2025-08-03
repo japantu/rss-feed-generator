@@ -2,7 +2,8 @@ name: Update RSS Feed
 
 on:
   schedule:
-    - cron: '0 21-23,0-16 * * *'
+    # 5分おきに実行
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -11,28 +12,49 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 3  # 3分でタイムアウト
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      - name: Cache dependencies
-        id: cache-pip
+          
+      - name: Cache dependencies and RSS data
         uses: actions/cache@v3
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          path: |
+            ~/.cache/pip
+            rss_cache.json
+          key: ${{ runner.os }}-rss-optimized-${{ hashFiles('requirements.txt') }}-${{ hashFiles('rss_cache.json') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-rss-optimized-${{ hashFiles('requirements.txt') }}-
+            ${{ runner.os }}-rss-optimized-
+            
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-      - name: Run rss_generator
-        run: python rss_generator.py
-      - name: Commit and push if changed
+          
+      - name: Run optimized RSS generator
+        run: |
+          echo "Starting RSS generation at $(date)"
+          python rss_generator.py
+          echo "RSS generation completed at $(date)"
+        
+      - name: Check for changes and commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/rss_output.xml
-          git diff --quiet --exit-code || (git commit -m "Update RSS feed" && git push)
+          git add public/rss_output.xml rss_cache.json
+          
+          if git diff --quiet --exit-code HEAD; then
+            echo "No changes detected - skipping commit"
+          else
+            echo "Changes detected - committing updates"
+            git commit -m "RSS更新 $(date +'%m/%d %H:%M')"
+            git push
+            echo "Successfully pushed updates"
+          fi
