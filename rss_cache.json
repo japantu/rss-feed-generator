@@ -2528,7 +2528,7 @@
       "content": "本日オープンした「4GamerGameShow2025」特設コーナーでは，プラットフォームの拡大を図るタクティカルシューター，素浪人から成り上がる戦国シミュレータ，スマホで復活したあのMMORPGスマホで復活したあのMMORPGなど，1人でもみんなでも楽しめる今夏の注目作品を一挙紹介！",
       "site": "4Gamer.net − 最新記事",
       "has_image": false,
-      "processed_at": "2025-08-03T23:12:55.594494"
+      "processed_at": "2025-08-03T23:32:52.189357"
     },
     "https://www.4gamer.net/games/860/G086013/20250801030/": {
       "title": "4Gamer.net − 最新記事閂アクアプラス作品のキャラが集結する2D対戦格ゲー「AQUAPAZZA」，PC版を9月25日に発売。PC版「うたわれるもの斬」は10月23日発売",
@@ -3429,6 +3429,16 @@
       "site": "4Gamer.net − 最新記事",
       "has_image": true,
       "processed_at": "2025-08-03T23:12:55.594247"
+    },
+    "https://www.4gamer.net/games/807/G080724/20250804006/": {
+      "title": "4Gamer.net − 最新記事閂［EVO2025］「餓狼伝説 City of the Wolves」部門優勝は日本のGO1選手。EWCに続いてEVO2025でも頂点を極める",
+      "link": "https://www.4gamer.net/games/807/G080724/20250804006/",
+      "pubDate": "2025-08-03T23:13:43+00:00",
+      "description": "アメリカ・ラスベガスで開催中のEVO2025の最終日（2025年8月4日），「餓狼伝説CityoftheWolves」部門の決勝トーナメントが終了した。優勝は日本のGO1選手。EsportsWorldCup2025を制した勢いそのままに，EVO2025でも頂点を極めた。",
+      "content": "<img src=\"https://www.4gamer.net/games/807/G080724/20250804006/SS/004.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>アメリカ・ラスベガスで開催中のEVO2025の最終日（2025年8月4日），「餓狼伝説CityoftheWolves」部門の決勝トーナメントが終了した。優勝は日本のGO1選手。EsportsWorldCup2025を制した勢いそのままに，EVO2025でも頂点を極めた。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-03T23:32:52.189077"
     }
   },
   "og_images": {
@@ -3606,7 +3616,8 @@
     "https://itainews.com/archives/2051572.html": "https://livedoor.blogimg.jp/dqnplus/imgs/8/5/85134c56-s.png",
     "https://www.4gamer.net/games/830/G083023/20250803002/": "https://www.4gamer.net/games/830/G083023/20250803002/SS/007.jpg",
     "https://www.gizmodo.jp/2025/08/306819.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/02/250804_morelle1.jpg?w=1280&h=630&f=jpg",
-    "https://www.4gamer.net/games/040/G004099/20250803008/": "https://www.4gamer.net/games/040/G004099/20250803008/SS/036.jpg"
+    "https://www.4gamer.net/games/040/G004099/20250803008/": "https://www.4gamer.net/games/040/G004099/20250803008/SS/036.jpg",
+    "https://www.4gamer.net/games/807/G080724/20250804006/": "https://www.4gamer.net/games/807/G080724/20250804006/SS/004.jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "9b2fd1a86ddc50db21df2764717f0f19",
@@ -3618,7 +3629,7 @@
     "https://www.lifehacker.jp/feed/index.xml": "b63e5a35131f8f698e8dd6a91c8b104f",
     "https://itainews.com/index.rdf": "ea4e333e31280b8e6c36603807fca5b7",
     "https://www.gizmodo.jp/atom.xml": "353d725e15c38124da81e325b44387c9",
-    "https://www.4gamer.net/rss/index.xml": "539fc6db6558d1df3b215517791450bb",
+    "https://www.4gamer.net/rss/index.xml": "ff3ecacce150eccb45a6e3f0fdb19087",
     "https://daily-gadget.net/feed/": "a7aa29e8bd7fe7cffcadce08e3b99a9a"
   }
 }
