@@ -2528,7 +2528,7 @@
       "content": "本日オープンした「4GamerGameShow2025」特設コーナーでは，プラットフォームの拡大を図るタクティカルシューター，素浪人から成り上がる戦国シミュレータ，スマホで復活したあのMMORPGスマホで復活したあのMMORPGなど，1人でもみんなでも楽しめる今夏の注目作品を一挙紹介！",
       "site": "4Gamer.net − 最新記事",
       "has_image": false,
-      "processed_at": "2025-08-03T21:10:07.261764"
+      "processed_at": "2025-08-03T22:56:38.276368"
     },
     "https://www.4gamer.net/games/860/G086013/20250801030/": {
       "title": "4Gamer.net − 最新記事閂アクアプラス作品のキャラが集結する2D対戦格ゲー「AQUAPAZZA」，PC版を9月25日に発売。PC版「うたわれるもの斬」は10月23日発売",
@@ -3359,6 +3359,16 @@
       "site": "やらおん！",
       "has_image": true,
       "processed_at": "2025-08-03T22:34:07.415044"
+    },
+    "https://www.4gamer.net/games/040/G004099/20250803008/": {
+      "title": "4Gamer.net − 最新記事閂4Gamerの1週間を振り返る「Weekly 4Gamer」，2025年7月28日〜8月3日",
+      "link": "https://www.4gamer.net/games/040/G004099/20250803008/",
+      "pubDate": "2025-08-03T22:00:00+00:00",
+      "description": "2025年7月28日〜8月3日，4Gamerに掲載された記事は339本でした。中国最大規模のゲームショウ「ChinaJoy2025」が開幕して，たくさんのレポート記事を掲載したり，いろいろな新作情報やプレイレポート，インタビューなどを載っけたりした4Gamerと世界のゲーム業界の1週間を振り返りましょう。",
+      "content": "<img src=\"https://www.4gamer.net/games/040/G004099/20250803008/SS/036.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>2025年7月28日〜8月3日，4Gamerに掲載された記事は339本でした。中国最大規模のゲームショウ「ChinaJoy2025」が開幕して，たくさんのレポート記事を掲載したり，いろいろな新作情報やプレイレポート，インタビューなどを載っけたりした4Gamerと世界のゲーム業界の1週間を振り返りましょう。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-03T22:56:38.276093"
     }
   },
   "og_images": {
@@ -3531,7 +3541,8 @@
     "https://www.4gamer.net/games/527/G052700/20250804001/": "https://www.4gamer.net/games/527/G052700/20250804001/SS/004.jpg",
     "https://www.4gamer.net/games/649/G064915/20250804004/": "https://www.4gamer.net/games/649/G064915/20250804004/SS/003.jpg",
     "https://itainews.com/archives/2051570.html": "https://livedoor.blogimg.jp/dqnplus/imgs/f/5/f59d9be6-s.png",
-    "https://www.gizmodo.jp/2025/08/no-youtube-under-16.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/03/kidsyoutuber.jpg?w=1280&h=630&f=jpg"
+    "https://www.gizmodo.jp/2025/08/no-youtube-under-16.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/03/kidsyoutuber.jpg?w=1280&h=630&f=jpg",
+    "https://www.4gamer.net/games/040/G004099/20250803008/": "https://www.4gamer.net/games/040/G004099/20250803008/SS/036.jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "9b2fd1a86ddc50db21df2764717f0f19",
@@ -3543,7 +3554,7 @@
     "https://www.lifehacker.jp/feed/index.xml": "e84bca19071ae2e7e2516fa35170a308",
     "https://itainews.com/index.rdf": "79e36844817c522867d2120ec4c7317e",
     "https://www.gizmodo.jp/atom.xml": "0087b43a1fbbcabb95b85344f810369d",
-    "https://www.4gamer.net/rss/index.xml": "cc3428750e0e655cb6b283d8978dade9",
+    "https://www.4gamer.net/rss/index.xml": "9603224cbcdf204071a8cbf984740e99",
     "https://daily-gadget.net/feed/": "a7aa29e8bd7fe7cffcadce08e3b99a9a"
   }
 }
