@@ -5089,6 +5089,16 @@
       "site": "4Gamer.net − 最新記事",
       "has_image": true,
       "processed_at": "2025-08-04T10:45:13.039187"
+    },
+    "https://www.gizmodo.jp/2025/08/machi-ya-syantoringconnect-review-852351.html": {
+      "title": "ギズモード・ジャパン閂指も首も快適に。スマホの持ち方を握って「支える」からふわりと「吊るす」にシフトするスマホリング「SYANTO Ring Connect ジビエ」",
+      "link": "https://www.gizmodo.jp/2025/08/machi-ya-syantoringconnect-review-852351.html",
+      "pubDate": "2025-08-04T10:55:00+00:00",
+      "description": "こちらは「かいサポ（お買いものサポーターチーム）」が編集・執筆した記事です。\n私たちの指、そして背骨は、今日もスマホを健気に支えます。その「仕方ない」を上書きするべく、身体の専門家が設計したのがスマホリングが「SYANTO Ring Connect ジビエ」です。\n発想は明快で、握って「支える」から、ふわりと「吊るす」へのシフトを狙うもの。持ち手が軽くなると、視線と姿勢まで連鎖的に整っていく…そん...",
+      "content": "<img src=\"https://media.loom-app.com/gizmodo/dist/images/2025/07/30/sreview00.jpg?w=1280&h=630&f=jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>こちらは「かいサポ（お買いものサポーターチーム）」が編集・執筆した記事です。\n私たちの指、そして背骨は、今日もスマホを健気に支えます。その「仕方ない」を上書きするべく、身体の専門家が設計したのがスマホリングが「SYANTO Ring Connect ジビエ」です。\n発想は明快で、握って「支える」から、ふわりと「吊るす」へのシフトを狙うもの。持ち手が軽くなると、視線と姿勢まで連鎖的に整っていく…そん...\n                <a href=\"https://www.gizmodo.jp/2025/08/machi-ya-syantoringconnect-review-852351.html\">続きを読む</a>",
+      "site": "ギズモード・ジャパン",
+      "has_image": true,
+      "processed_at": "2025-08-04T10:58:37.343889"
     }
   },
   "og_images": {
@@ -5374,7 +5384,8 @@
     "https://www.4gamer.net/games/922/G092263/20250730034/": "https://www.4gamer.net/games/922/G092263/20250730034/SS/002.jpg",
     "https://www.lifehacker.jp/article/amazon-timesale-fes-2025-0804-2/": "https://media.loom-app.com/loom/2025/08/04/1b5b26e3-9484-4270-be87-d65395b21810/original.jpg?w=1200&h=630&f=jpg",
     "https://www.4gamer.net/games/924/G092498/20250804053/": "https://www.4gamer.net/games/924/G092498/20250804053/SS/002.jpg",
-    "https://www.4gamer.net/games/760/G076035/20250804056/": "https://www.4gamer.net/games/760/G076035/20250804056/SS/002.jpg"
+    "https://www.4gamer.net/games/760/G076035/20250804056/": "https://www.4gamer.net/games/760/G076035/20250804056/SS/002.jpg",
+    "https://www.gizmodo.jp/2025/08/machi-ya-syantoringconnect-review-852351.html": "https://media.loom-app.com/gizmodo/dist/images/2025/07/30/sreview00.jpg?w=1280&h=630&f=jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "a1d2af75338561c5d06f49fea2caff32",
@@ -5385,7 +5396,7 @@
     "http://blog.livedoor.jp/news23vip/index.rdf": "b32e10989da8190de76889b225e700f1",
     "https://www.lifehacker.jp/feed/index.xml": "76f9786d41a06dae6a3f36890cb54d0e",
     "https://itainews.com/index.rdf": "09a6b59b3c81d338f171695d7491ecbc",
-    "https://www.gizmodo.jp/atom.xml": "a64d4ad0c9e4b306daec8bfa81132fc6",
+    "https://www.gizmodo.jp/atom.xml": "029c31e8c58ded13917edf8a624454a4",
     "https://www.4gamer.net/rss/index.xml": "c95265f46e07067d1afc8297006061db",
     "https://daily-gadget.net/feed/": "0f81665172fa9b34d88e386e20f72be3"
   }
