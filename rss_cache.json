@@ -5859,6 +5859,16 @@
       "site": "4Gamer.net − 最新記事",
       "has_image": true,
       "processed_at": "2025-08-04T23:10:16.041813"
+    },
+    "https://www.4gamer.net/games/668/G066849/20250731001/": {
+      "title": "4Gamer.net − 最新記事閂プロが指南する「マーダーミステリー」の作り方。デジタルゲームの元クリエイターが，その構造の面白さやゲームデザインのコツを語る［CEDEC 2025］",
+      "link": "https://www.4gamer.net/games/668/G066849/20250731001/",
+      "pubDate": "2025-08-04T23:10:00+00:00",
+      "description": "ゲーム開発者向けカンファレンスの「CEDEC2025」で，アナログゲームの「マーダーミステリー」を扱ったセッション「マーダーミステリーのゲームデザイン」が2025年7月23日に開催されたので，その模様をレポートする。日本マーダーミステリー作家協会の檜木田正史氏が，その構造について解説を行った。",
+      "content": "<img src=\"https://www.4gamer.net/games/668/G066849/20250731001/SS/012.webp\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>ゲーム開発者向けカンファレンスの「CEDEC2025」で，アナログゲームの「マーダーミステリー」を扱ったセッション「マーダーミステリーのゲームデザイン」が2025年7月23日に開催されたので，その模様をレポートする。日本マーダーミステリー作家協会の檜木田正史氏が，その構造について解説を行った。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-04T23:31:06.009281"
     }
   },
   "og_images": {
@@ -6176,7 +6186,8 @@
     "https://www.gizmodo.jp/2025/08/switchbot-circulator-1.html": "https://media.loom-app.com/gizmodo/dist/images/2024/07/13/sbs.jpg?w=1280&h=630&f=jpg",
     "https://www.4gamer.net/games/991/G999104/20250724053/": "https://www.4gamer.net/games/991/G999104/20250724053/SS/014.jpg",
     "https://www.4gamer.net/games/866/G086614/20250724066/": "https://www.4gamer.net/games/866/G086614/20250724066/SS/010.webp",
-    "https://www.4gamer.net/games/421/G042182/20250804058/": "https://www.4gamer.net/games/421/G042182/20250804058/SS/002.jpg"
+    "https://www.4gamer.net/games/421/G042182/20250804058/": "https://www.4gamer.net/games/421/G042182/20250804058/SS/002.jpg",
+    "https://www.4gamer.net/games/668/G066849/20250731001/": "https://www.4gamer.net/games/668/G066849/20250731001/SS/012.webp"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "9845094c8aca79009ef47b9b2848432c",
@@ -6188,7 +6199,7 @@
     "https://www.lifehacker.jp/feed/index.xml": "94c0d64026d830866fefa322e3592b0a",
     "https://itainews.com/index.rdf": "7c389c6303d23ce351cfe3b328a18dcc",
     "https://www.gizmodo.jp/atom.xml": "42e83b30318f84ad98a73558547cc3dd",
-    "https://www.4gamer.net/rss/index.xml": "3ae2ddd3f684d8a54cb4024871920665",
+    "https://www.4gamer.net/rss/index.xml": "89af1117d764afe5bdda37915640227a",
     "https://daily-gadget.net/feed/": "6430e159c7b76b42f73e6bd9c26424a5"
   }
 }
