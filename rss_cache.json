@@ -5889,6 +5889,16 @@
       "site": "キニ速",
       "has_image": true,
       "processed_at": "2025-08-04T23:47:24.783093"
+    },
+    "http://yaraon-blog.com/archives/281426": {
+      "title": "やらおん！閂アニメや漫画の『主人公の親』が絶対やらない仕事。新聞配達・ライン工・工事現場・交通誘導・ゴミ回収",
+      "link": "http://yaraon-blog.com/archives/281426",
+      "pubDate": "2025-08-04T23:51:46+00:00",
+      "description": "",
+      "content": "<p><a href=\"https://blog-imgs-163.fc2.com/y/a/r/yarakan/0125_machikado2_bansen_15s_mae_shiro096_1280.jpg\" rel=\"noopener\" target=\"_blank\"><img alt=\"0125_machikado2_bansen_15s_mae_shiro096_1280.jpg\" border=\"0\" height=\"312\" src=\"https://blog-imgs-163.fc2.com/y/a/r/yarakan/0125_machikado2_bansen_15s_mae_shiro096_1280s.jpg\" width=\"555\" /></a></p>",
+      "site": "やらおん！",
+      "has_image": true,
+      "processed_at": "2025-08-04T23:54:17.898808"
     }
   },
   "og_images": {
@@ -6214,7 +6224,7 @@
     "https://hamusoku.com/index.rdf": "9845094c8aca79009ef47b9b2848432c",
     "http://himasoku.com/index.rdf": "ba8bbc87fa2eb9a57cbe2973a3ecf977",
     "http://blog.livedoor.jp/kinisoku/index.rdf": "3f5c5606b64f70e3e144176c2f6acaf9",
-    "http://yaraon-blog.com/feed": "8bfe828ba224c1ee7b6d0d0f97cba5f2",
+    "http://yaraon-blog.com/feed": "57a0b55c22b7e429665c27cf1b95527a",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf": "3fa467c727ac0f203da80a738d0d48c0",
     "http://blog.livedoor.jp/news23vip/index.rdf": "36bc76f48549a43ac324e6b6125e12c2",
     "https://www.lifehacker.jp/feed/index.xml": "c241728ea3128043b5c830addfac2fd9",
