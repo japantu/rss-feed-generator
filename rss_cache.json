@@ -4709,6 +4709,26 @@
       "site": "ギズモード・ジャパン",
       "has_image": true,
       "processed_at": "2025-08-04T07:49:33.969498"
+    },
+    "https://hamusoku.com/archives/10909950.html": {
+      "title": "ハムスター速報閂岐阜県知事「見る予定がないのにNHK受信料を払うのは適切ではない」",
+      "link": "https://hamusoku.com/archives/10909950.html",
+      "pubDate": "2025-08-04T07:50:00+00:00",
+      "description": "",
+      "content": "<div align=\"center\"><a href=\"https://livedoor.blogimg.jp/hamusoku/imgs/e/3/e3f4b5e7.jpg\" target=\"_blank\" title=\"K10014743291_2503072212_0307223452_01_02\"><img alt=\"K10014743291_2503072212_0307223452_01_02\" border=\"0\" class=\"pict\" height=\"281\" hspace=\"5\" src=\"https://livedoor.blogimg.jp/hamusoku/imgs/e/3/e3f4b5e7-s.jpg\" width=\"500\" /></a></div><br />\n<br />\n<br />\n\n<a href=\"https://hamusoku.com/archives/10909950.html\">続きを読む</a>",
+      "site": "ハムスター速報",
+      "has_image": true,
+      "processed_at": "2025-08-04T07:58:08.714848"
+    },
+    "https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0804-1.html": {
+      "title": "ギズモード・ジャパン閂AIも防水も強気なOPPOのスマホ「OPPO Reno13 A」。夏の思い出激写しよう",
+      "link": "https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0804-1.html",
+      "pubDate": "2025-08-04T07:55:00+00:00",
+      "description": "こちらは｢かいサポ（お買いものサポーターチーム）｣が編集・執筆した記事です。\n楽天市場では、最大50％と高ポイント還元イベント｢楽天スーパーDEAL｣を開催中。\n現在、120Hzリフレッシュレート対応の6.7インチ有機ELディスプレイを搭載した「OPPO Reno13 A」や、映り込みが少なく目に優しいディスプレイと、充実したAI機能が魅力の「OPPO Pad 3 Matte Display Ed...",
+      "content": "<img src=\"https://media.loom-app.com/gizmodo/dist/images/2025/08/04/20250804oppo_gizrakuten.jpg?w=1280&h=630&f=jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>こちらは｢かいサポ（お買いものサポーターチーム）｣が編集・執筆した記事です。\n楽天市場では、最大50％と高ポイント還元イベント｢楽天スーパーDEAL｣を開催中。\n現在、120Hzリフレッシュレート対応の6.7インチ有機ELディスプレイを搭載した「OPPO Reno13 A」や、映り込みが少なく目に優しいディスプレイと、充実したAI機能が魅力の「OPPO Pad 3 Matte Display Ed...\n                <a href=\"https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0804-1.html\">続きを読む</a>",
+      "site": "ギズモード・ジャパン",
+      "has_image": true,
+      "processed_at": "2025-08-04T07:58:09.178989"
     }
   },
   "og_images": {
@@ -4969,10 +4989,11 @@
     "https://www.lifehacker.jp/article/rakuten-sale-2025-0804-1/": "https://media.loom-app.com/loom/2025/08/04/0a7b153a-2871-4019-8683-4df9fd13d65d/original.png?w=1200&h=630&f=jpg",
     "https://www.4gamer.net/games/599/G059954/20250804046/": "https://www.4gamer.net/games/599/G059954/20250804046/SS/001.jpg",
     "https://www.4gamer.net/games/822/G082280/20250802004/": "https://www.4gamer.net/games/822/G082280/20250802004/SS/002.jpg",
-    "https://www.gizmodo.jp/2025/08/utamaro-2.html": "https://media.loom-app.com/gizmodo/dist/images/2023/08/29/white_tshirts_main.jpg?w=1280&h=630&f=jpg"
+    "https://www.gizmodo.jp/2025/08/utamaro-2.html": "https://media.loom-app.com/gizmodo/dist/images/2023/08/29/white_tshirts_main.jpg?w=1280&h=630&f=jpg",
+    "https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0804-1.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/04/20250804oppo_gizrakuten.jpg?w=1280&h=630&f=jpg"
   },
   "feed_hashes": {
-    "https://hamusoku.com/index.rdf": "ff3b51779931b16efb612d6a109e54d9",
+    "https://hamusoku.com/index.rdf": "823d3ab385ca7cad3697d3b4796d7a9d",
     "http://himasoku.com/index.rdf": "ba8bbc87fa2eb9a57cbe2973a3ecf977",
     "http://blog.livedoor.jp/kinisoku/index.rdf": "a4ea281c996dc99ee6ee705813bfd3e9",
     "http://yaraon-blog.com/feed": "2400039b0f18e92d7c31165ce35cff49",
@@ -4980,7 +5001,7 @@
     "http://blog.livedoor.jp/news23vip/index.rdf": "d0e31504cf6ce5e4a03ad41957a8b0c2",
     "https://www.lifehacker.jp/feed/index.xml": "09dc1dd3f69974f4332c8bf19be6b427",
     "https://itainews.com/index.rdf": "f8af8ed0a1765f4e742df7cd52d3db5c",
-    "https://www.gizmodo.jp/atom.xml": "494c0a7cc0d0652a61aa7b74da6d0a04",
+    "https://www.gizmodo.jp/atom.xml": "deadce7c81502e6fa5d35dcad20d8aff",
     "https://www.4gamer.net/rss/index.xml": "7d62f10c41ed591549de5955cf24ee43",
     "https://daily-gadget.net/feed/": "0f81665172fa9b34d88e386e20f72be3"
   }
