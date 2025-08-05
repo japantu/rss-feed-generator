@@ -7319,6 +7319,26 @@
       "site": "4Gamer.net − 最新記事",
       "has_image": true,
       "processed_at": "2025-08-05T10:43:45.931564"
+    },
+    "https://www.lifehacker.jp/article/2508-costorypo-wooaska8-start-1232948792/": {
+      "title": "ライフハッカー・ジャパン閂オフラインでも使えるAI翻訳機。観光案内からビジネスシーンまで完全アシストしてくれます",
+      "link": "https://www.lifehacker.jp/article/2508-costorypo-wooaska8-start-1232948792/",
+      "pubDate": "2025-08-05T10:45:00+00:00",
+      "description": "ChatGPTを搭載したAI翻訳機「Wooask A8」は、海外とのビジネスや語学学習を新たなレベルへ引き上げます。オンライン144言語、オフライン16言語に対応し、 Qualcomm製チップによる高速・高精度翻訳が特長です。単なる翻訳に留まらずChat AIが観光案内からビジネスメール作成までアシスト。16GBメモリでの音楽再生やボイスレコード機能も備え移動時間を有効活用できます。アプリ不要ですぐに使える手軽さも魅力。この1台が海外出張やリモート会議のパフォーマンスを最大化する頼れるパートナーとなるでしょう。",
+      "content": "<img src=\"https://media.loom-app.com/loom/2025/08/05/9fff1ff2-261c-41ed-9557-8d6fc27f5e74/original.jpg?w=1200&h=630&f=jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>ChatGPTを搭載したAI翻訳機「Wooask A8」は、海外とのビジネスや語学学習を新たなレベルへ引き上げます。オンライン144言語、オフライン16言語に対応し、 Qualcomm製チップによる高速・高精度翻訳が特長です。単なる翻訳に留まらずChat AIが観光案内からビジネスメール作成までアシスト。16GBメモリでの音楽再生やボイスレコード機能も備え移動時間を有効活用できます。アプリ不要ですぐに使える手軽さも魅力。この1台が海外出張やリモート会議のパフォーマンスを最大化する頼れるパートナーとなるでしょう。",
+      "site": "ライフハッカー・ジャパン",
+      "has_image": true,
+      "processed_at": "2025-08-05T10:57:53.787006"
+    },
+    "https://www.4gamer.net/games/274/G027460/20250805045/": {
+      "title": "4Gamer.net − 最新記事閂ミュージカル「刀剣乱舞」初の展覧会型イベント，東京ドームシティ Gallery AaMoで10月30日から11月30日まで開催",
+      "link": "https://www.4gamer.net/games/274/G027460/20250805045/",
+      "pubDate": "2025-08-05T10:43:03+00:00",
+      "description": "ミュージカル「刀剣乱舞」初の展覧会型イベント「ミュージカル『刀剣乱舞』十周年記念乱舞博覧会」が，東京ドームシティGalleryAaMoで2025年10月30日から11月30日まで開催となる。このイベントは，シリーズ10周年を記念して行われるもので，公演の1部ミュージカルパートに特化した内容となっている。",
+      "content": "<img src=\"https://www.4gamer.net/games/274/G027460/20250805045/SS/001.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>ミュージカル「刀剣乱舞」初の展覧会型イベント「ミュージカル『刀剣乱舞』十周年記念乱舞博覧会」が，東京ドームシティGalleryAaMoで2025年10月30日から11月30日まで開催となる。このイベントは，シリーズ10周年を記念して行われるもので，公演の1部ミュージカルパートに特化した内容となっている。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-05T10:57:55.979214"
     }
   },
   "og_images": {
@@ -7736,7 +7756,9 @@
     "https://itainews.com/archives/2051641.html": "https://livedoor.blogimg.jp/dqnplus/imgs/9/1/9126d964-s.png",
     "https://www.4gamer.net/games/865/G086581/20250805044/": "https://www.4gamer.net/games/865/G086581/20250805044/SS/001.jpg",
     "https://www.gizmodo.jp/2025/08/moondrop-pill-capsule.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/05/2025_08_05pik00.jpg?w=1280&h=630&f=jpg",
-    "https://www.4gamer.net/games/673/G067389/20250805043/": "https://www.4gamer.net/games/673/G067389/20250805043/SS/004.jpg"
+    "https://www.4gamer.net/games/673/G067389/20250805043/": "https://www.4gamer.net/games/673/G067389/20250805043/SS/004.jpg",
+    "https://www.lifehacker.jp/article/2508-costorypo-wooaska8-start-1232948792/": "https://media.loom-app.com/loom/2025/08/05/9fff1ff2-261c-41ed-9557-8d6fc27f5e74/original.jpg?w=1200&h=630&f=jpg",
+    "https://www.4gamer.net/games/274/G027460/20250805045/": "https://www.4gamer.net/games/274/G027460/20250805045/SS/001.jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "acd708316ea1ebb122240105bad34022",
@@ -7745,10 +7767,10 @@
     "http://yaraon-blog.com/feed": "f5ebc75f2ccc20d3696ba9d7521246d6",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf": "abb2a9cac5aeef5c65a24089df17b64d",
     "http://blog.livedoor.jp/news23vip/index.rdf": "d71024061021ace751ee5bfd8eeceaf2",
-    "https://www.lifehacker.jp/feed/index.xml": "dbbc6e874bda08390d89e1934d364e10",
+    "https://www.lifehacker.jp/feed/index.xml": "982c694bd7cbf8356872f2c13a283ce0",
     "https://itainews.com/index.rdf": "88dcc10279d9a143b034b4b7fff7813a",
     "https://www.gizmodo.jp/atom.xml": "b3d91f558e9c569294ed586e40cc90ae",
-    "https://www.4gamer.net/rss/index.xml": "3071e2f18fe15360194b8a67cf7c666b",
+    "https://www.4gamer.net/rss/index.xml": "33e9515ad04037b825286df0a45e847f",
     "https://daily-gadget.net/feed/": "6430e159c7b76b42f73e6bd9c26424a5"
   }
 }
