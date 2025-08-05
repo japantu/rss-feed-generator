@@ -7459,6 +7459,16 @@
       "site": "ギズモード・ジャパン",
       "has_image": true,
       "processed_at": "2025-08-05T11:32:09.111875"
+    },
+    "https://www.lifehacker.jp/article/2508-mac-trackpad-as-a-scale/": {
+      "title": "ライフハッカー・ジャパン閂あなたのMacBook、実は「重さ」を測れます。トラックパッドの隠された機能と遊び心",
+      "link": "https://www.lifehacker.jp/article/2508-mac-trackpad-as-a-scale/",
+      "pubDate": "2025-08-05T11:30:00+00:00",
+      "description": "Macの感圧センサーを応用したアプリ「TrackWeight」で、ラップトップがまさかの“はかり”に。無駄なようで、ちょっと感動するハックです。",
+      "content": "<img src=\"https://media.loom-app.com/loom/2025/08/05/30c134ef-420f-44c7-a36b-60ef139e0e2e/original.png?w=1200&h=630&f=jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>Macの感圧センサーを応用したアプリ「TrackWeight」で、ラップトップがまさかの“はかり”に。無駄なようで、ちょっと感動するハックです。",
+      "site": "ライフハッカー・ジャパン",
+      "has_image": true,
+      "processed_at": "2025-08-05T11:46:37.419968"
     }
   },
   "og_images": {
@@ -7885,7 +7895,8 @@
     "https://www.4gamer.net/games/910/G091087/20250805048/": "https://www.4gamer.net/games/910/G091087/20250805048/SS/001.jpg",
     "https://www.4gamer.net/games/199/G019924/20250805047/": "https://www.4gamer.net/games/199/G019924/20250805047/SS/002.jpg",
     "https://www.4gamer.net/games/659/G065911/20250805017/": "https://www.4gamer.net/games/659/G065911/20250805017/SS/001.jpg",
-    "https://www.gizmodo.jp/2025/08/pixel-10-soon-ad.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/05/GooglePixel10_Soon.jpeg?w=1280&h=630&f=jpg"
+    "https://www.gizmodo.jp/2025/08/pixel-10-soon-ad.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/05/GooglePixel10_Soon.jpeg?w=1280&h=630&f=jpg",
+    "https://www.lifehacker.jp/article/2508-mac-trackpad-as-a-scale/": "https://media.loom-app.com/loom/2025/08/05/30c134ef-420f-44c7-a36b-60ef139e0e2e/original.png?w=1200&h=630&f=jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "6ee9d2769476aa5f4b675a451110165d",
@@ -7894,7 +7905,7 @@
     "http://yaraon-blog.com/feed": "8ad8b2f73c25c2de58a8e5347b69e54e",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf": "857e96148baaebe6ed98c47bbda48a08",
     "http://blog.livedoor.jp/news23vip/index.rdf": "d71024061021ace751ee5bfd8eeceaf2",
-    "https://www.lifehacker.jp/feed/index.xml": "6ff6a284f65b9929e8134c25c60aae1a",
+    "https://www.lifehacker.jp/feed/index.xml": "92d6562e6ea12e1c8daa657f246735d8",
     "https://itainews.com/index.rdf": "3e914557894dace20c743d9c9a277227",
     "https://www.gizmodo.jp/atom.xml": "3934acc96fd56e0838d7f30312ff1b4b",
     "https://www.4gamer.net/rss/index.xml": "6c1e7d4e60b93fd53e3e396f79502755",
