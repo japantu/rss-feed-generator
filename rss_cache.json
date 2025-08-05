@@ -8189,6 +8189,16 @@
       "site": "やらおん！",
       "has_image": true,
       "processed_at": "2025-08-05T23:47:20.818400"
+    },
+    "https://www.lifehacker.jp/article/2508-amazon-atexhandcare/": {
+      "title": "ライフハッカー・ジャパン閂癒し力が反則級… 猫好き歓喜の「猫型ハンドマッサージャー」が可愛すぎ",
+      "link": "https://www.lifehacker.jp/article/2508-amazon-atexhandcare/",
+      "pubDate": "2025-08-05T23:45:00+00:00",
+      "description": "スマホやパソコンを使う時間が増え、知らず知らずのうちに酷使している私たちの手。仕事や家事の合間に、手と心を同時にリラックスさせてくれる可愛すぎるアイテムが登場しました。\n猫好きさん必見の「ルルド 猫型 ハンドぎゅっと」は、見た目の愛らしさと機能性を兼ね備えた、今注目のハンドケアアイテムです。",
+      "content": "<img src=\"https://media.loom-app.com/loom/2025/08/05/ecbc04ec-a5ca-401a-b4b6-0522f637d2ba/original.png?w=1200&h=630&f=jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>スマホやパソコンを使う時間が増え、知らず知らずのうちに酷使している私たちの手。仕事や家事の合間に、手と心を同時にリラックスさせてくれる可愛すぎるアイテムが登場しました。\n猫好きさん必見の「ルルド 猫型 ハンドぎゅっと」は、見た目の愛らしさと機能性を兼ね備えた、今注目のハンドケアアイテムです。",
+      "site": "ライフハッカー・ジャパン",
+      "has_image": true,
+      "processed_at": "2025-08-05T23:54:30.712609"
     }
   },
   "og_images": {
@@ -8646,7 +8656,8 @@
     "https://www.gizmodo.jp/2025/08/ice-neck-ring-space-brothers.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/01/fs-img-20.jpeg?w=1280&h=630&f=jpg",
     "https://www.gizmodo.jp/2025/08/machi-ya-agrelux-start-871217.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/04/machi-ya-agrelux-start-871217-thumb.jpg?w=1280&h=630&f=jpg",
     "https://www.4gamer.net/games/991/G999104/20250806001/": "https://www.4gamer.net/games/991/G999104/20250806001/SS/001.png",
-    "https://www.lifehacker.jp/article/2508-amazon-nimasoglassfilm-2dc-255/": "https://media.loom-app.com/loom/2024/09/24/1e847de0-26a9-4c28-9081-d60a5bdb3643/original.jpg?w=1200&h=630&f=jpg"
+    "https://www.lifehacker.jp/article/2508-amazon-nimasoglassfilm-2dc-255/": "https://media.loom-app.com/loom/2024/09/24/1e847de0-26a9-4c28-9081-d60a5bdb3643/original.jpg?w=1200&h=630&f=jpg",
+    "https://www.lifehacker.jp/article/2508-amazon-atexhandcare/": "https://media.loom-app.com/loom/2025/08/05/ecbc04ec-a5ca-401a-b4b6-0522f637d2ba/original.png?w=1200&h=630&f=jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "6a6844f6ee2f522083b6286c6260cdf9",
@@ -8655,7 +8666,7 @@
     "http://yaraon-blog.com/feed": "ef4f3c1be1dc023808cc78886cb9c1ef",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf": "4a7cb1973e4534bb6381c8983c3f46a6",
     "http://blog.livedoor.jp/news23vip/index.rdf": "b9ed01a386a7e67d9235bcbb22c15c6d",
-    "https://www.lifehacker.jp/feed/index.xml": "85e42feacdf2b07f8bd15faa17eed2f4",
+    "https://www.lifehacker.jp/feed/index.xml": "db23bb514e4f5beb50cbe47e7fbbdf24",
     "https://itainews.com/index.rdf": "2eb6ec4a6605fa6c94d15546c1562da8",
     "https://www.gizmodo.jp/atom.xml": "b768481fdb1d4b70da250e2178014c94",
     "https://www.4gamer.net/rss/index.xml": "ffd729c2e82ee286e4ab8938afdf0cdb",
