@@ -10439,6 +10439,16 @@
       "site": "ギズモード・ジャパン",
       "has_image": true,
       "processed_at": "2025-08-06T22:38:45.247566"
+    },
+    "https://hamusoku.com/archives/10908713.html": {
+      "title": "ハムスター速報閂北海道の利点「ゴキブリが出てこない」と「台風直撃しない」が強すぎる",
+      "link": "https://hamusoku.com/archives/10908713.html",
+      "pubDate": "2025-08-06T22:39:00+00:00",
+      "description": "",
+      "content": "<div align=\"center\"><a href=\"https://livedoor.blogimg.jp/hamusoku/imgs/7/a/7af0bba4.jpg\" target=\"_blank\" title=\"image (15)\"><img alt=\"image (15)\" border=\"0\" class=\"pict\" height=\"667\" hspace=\"5\" src=\"https://livedoor.blogimg.jp/hamusoku/imgs/7/a/7af0bba4-s.jpg\" width=\"500\" /></a></div><br />\n<br />\n<br />\n\n<a href=\"https://hamusoku.com/archives/10908713.html\">続きを読む</a>",
+      "site": "ハムスター速報",
+      "has_image": true,
+      "processed_at": "2025-08-06T22:52:08.616872"
     }
   },
   "og_images": {
@@ -11041,7 +11051,7 @@
     "https://www.gizmodo.jp/2025/08/sonos-overheat.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/06/250806sonosoverheated.jpg?w=1280&h=630&f=jpg"
   },
   "feed_hashes": {
-    "https://hamusoku.com/index.rdf": "4738bcd22c545f944ef474a8bff2fdaa",
+    "https://hamusoku.com/index.rdf": "fbf6b477def94af78c3740b01fdd3109",
     "http://himasoku.com/index.rdf": "ba8bbc87fa2eb9a57cbe2973a3ecf977",
     "http://blog.livedoor.jp/kinisoku/index.rdf": "51280dc80db1e2da8421fc23b99b10e8",
     "http://yaraon-blog.com/feed": "19ba33426d06312968d358e57cce3f2d",
