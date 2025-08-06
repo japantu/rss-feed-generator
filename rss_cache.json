@@ -10529,6 +10529,16 @@
       "site": "4Gamer.net − 最新記事",
       "has_image": true,
       "processed_at": "2025-08-06T23:10:26.442116"
+    },
+    "https://www.4gamer.net/games/991/G999104/20250725063/": {
+      "title": "4Gamer.net − 最新記事閂「コグトレオンライン」「タブドリLive!」が示す学びの未来。子供たちが使いたくなるデジタル教材ができるまで［CEDEC 2025］",
+      "link": "https://www.4gamer.net/games/991/G999104/20250725063/",
+      "pubDate": "2025-08-06T23:10:00+00:00",
+      "description": "「CEDEC2025」にて行われたセッション「ゲーム開発者が教育コンテンツの開発に挑戦！子ども向け事業会社設立から日本e-Learning大賞を受賞するまでの軌跡」の聴講レポートをお届けする。デジタル教材「コグトレオンライン」「タブドリLive!」でのケースを例に，開発における課題と対処方法が紹介された。",
+      "content": "<img src=\"https://www.4gamer.net/games/991/G999104/20250725063/SS/003.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>「CEDEC2025」にて行われたセッション「ゲーム開発者が教育コンテンツの開発に挑戦！子ども向け事業会社設立から日本e-Learning大賞を受賞するまでの軌跡」の聴講レポートをお届けする。デジタル教材「コグトレオンライン」「タブドリLive!」でのケースを例に，開発における課題と対処方法が紹介された。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-06T23:33:09.801263"
     }
   },
   "og_images": {
@@ -11135,7 +11145,8 @@
     "https://www.gizmodo.jp/2025/08/ios-26-safari.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/06/2025_08_06sak00B.jpg?w=1280&h=630&f=jpg",
     "https://www.4gamer.net/games/803/G080391/20250728050/": "https://www.4gamer.net/games/803/G080391/20250728050/SS/004.jpg",
     "https://www.gizmodo.jp/2025/08/machi-ya-2in1airduster-end-813277.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/04/2in1airduster-end-813277-thumb.jpg?w=1280&h=630&f=jpg",
-    "https://www.4gamer.net/games/552/G055216/20250729041/": "https://www.4gamer.net/games/552/G055216/20250729041/SS/002.jpg"
+    "https://www.4gamer.net/games/552/G055216/20250729041/": "https://www.4gamer.net/games/552/G055216/20250729041/SS/002.jpg",
+    "https://www.4gamer.net/games/991/G999104/20250725063/": "https://www.4gamer.net/games/991/G999104/20250725063/SS/003.jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "fbf6b477def94af78c3740b01fdd3109",
@@ -11147,7 +11158,7 @@
     "https://www.lifehacker.jp/feed/index.xml": "aba1f3d79d1950a2876d5bfe84ecd0d3",
     "https://itainews.com/index.rdf": "b9ef0e68d5622d6825cce6c524cb74ae",
     "https://www.gizmodo.jp/atom.xml": "80b84d0c6262251580a5a79dfbb7d16c",
-    "https://www.4gamer.net/rss/index.xml": "0ee3e5cdfe3dbdf94fb014cb482a0a51",
+    "https://www.4gamer.net/rss/index.xml": "adc6517141f5f802ec932bf04abe2b76",
     "https://daily-gadget.net/feed/": "037a402717cb19226523a283d6099c7c"
   }
 }
