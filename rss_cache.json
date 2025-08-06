@@ -9919,6 +9919,16 @@
       "site": "やらおん！",
       "has_image": true,
       "processed_at": "2025-08-06T11:31:47.401779"
+    },
+    "https://www.lifehacker.jp/article/2508-hydration-item-matome/": {
+      "title": "ライフハッカー・ジャパン閂ただの水筒じゃ物足りない！無理なく「水分補給が習慣になる」便利ツール3選",
+      "link": "https://www.lifehacker.jp/article/2508-hydration-item-matome/",
+      "pubDate": "2025-08-06T11:30:00+00:00",
+      "description": "夏本番、水分補給は健康の基本。「つい忘れる」「荷物になる」と続かない人でも水分補給が習慣化できる便利アイテムを3つ紹介します。",
+      "content": "<img src=\"https://media.loom-app.com/loom/2025/08/06/93473c8e-48b5-48d5-951e-3baf8972e19a/original.jpg?w=1200&h=630&f=jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>夏本番、水分補給は健康の基本。「つい忘れる」「荷物になる」と続かない人でも水分補給が習慣化できる便利アイテムを3つ紹介します。",
+      "site": "ライフハッカー・ジャパン",
+      "has_image": true,
+      "processed_at": "2025-08-06T11:46:43.276714"
     }
   },
   "og_images": {
@@ -10494,7 +10504,8 @@
     "https://www.4gamer.net/games/991/G999104/20250806058/": "https://www.4gamer.net/games/991/G999104/20250806058/SS/001.png",
     "https://www.4gamer.net/games/519/G051983/20250806054/": "https://www.4gamer.net/games/519/G051983/20250806054/SS/001.jpg",
     "https://www.4gamer.net/games/155/G015581/20250806057/": "https://www.4gamer.net/games/155/G015581/20250806057/SS/002.jpg",
-    "https://itainews.com/archives/2051678.html": "https://livedoor.blogimg.jp/dqnplus/imgs/e/f/ef11af1d-s.png"
+    "https://itainews.com/archives/2051678.html": "https://livedoor.blogimg.jp/dqnplus/imgs/e/f/ef11af1d-s.png",
+    "https://www.lifehacker.jp/article/2508-hydration-item-matome/": "https://media.loom-app.com/loom/2025/08/06/93473c8e-48b5-48d5-951e-3baf8972e19a/original.jpg?w=1200&h=630&f=jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "4cebdc98f52c046b9721e75d0ce29e3c",
@@ -10503,7 +10514,7 @@
     "http://yaraon-blog.com/feed": "0661ee459eef0991d3f3bbbd0836c691",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf": "0f381aea1764fde0f6983f53af146a52",
     "http://blog.livedoor.jp/news23vip/index.rdf": "41711b7894644e4cd83830d77d4e748c",
-    "https://www.lifehacker.jp/feed/index.xml": "d682bb95e2e60d4244c81a4f27b69547",
+    "https://www.lifehacker.jp/feed/index.xml": "b0c3dee933e8d554b9e265fd7889583a",
     "https://itainews.com/index.rdf": "95bf283ec1cda2b54a9bfad9cd13edad",
     "https://www.gizmodo.jp/atom.xml": "d6253935e199b23de09722acf9bdc5f4",
     "https://www.4gamer.net/rss/index.xml": "3170af2678c7b5f8c07fcf00a7b63879",
