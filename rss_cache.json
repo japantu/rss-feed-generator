@@ -9609,6 +9609,16 @@
       "site": "4Gamer.net − 最新記事",
       "has_image": true,
       "processed_at": "2025-08-06T09:37:13.788561"
+    },
+    "https://www.4gamer.net/games/727/G072787/20250806051/": {
+      "title": "4Gamer.net − 最新記事閂「クリスタル・オブ・アトラン」，「デジモンアドベンチャー」とのコラボPVを公開。コラボは8月21日から9月17日まで",
+      "link": "https://www.4gamer.net/games/727/G072787/20250806051/",
+      "pubDate": "2025-08-06T09:49:04+00:00",
+      "description": "Nuverseは本日（2025年8月6日），アクションRPG「クリスタル・オブ・アトラン」（PC/PS5/iOS/Android）と，「デジモンアドベンチャー」のコラボPVを公開した。コラボは，8月21日から9月17日まで開催予定。ムゲンドラモンやアグモン，テイルモンが登場する。",
+      "content": "<img src=\"https://www.4gamer.net/games/727/G072787/20250806051/SS/003.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>Nuverseは本日（2025年8月6日），アクションRPG「クリスタル・オブ・アトラン」（PC/PS5/iOS/Android）と，「デジモンアドベンチャー」のコラボPVを公開した。コラボは，8月21日から9月17日まで開催予定。ムゲンドラモンやアグモン，テイルモンが登場する。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-06T09:54:11.253781"
     }
   },
   "og_images": {
@@ -10162,7 +10172,8 @@
     "https://www.lifehacker.jp/article/2508_roomie_melt/": "https://media.loom-app.com/loom/2025/08/06/3897bb01-cabe-438c-88f3-6484ce9713a0/original.png?w=1200&h=630&f=jpg",
     "https://www.4gamer.net/games/935/G093512/20250806047/": "https://www.4gamer.net/games/935/G093512/20250806047/SS/001.jpg",
     "https://www.4gamer.net/games/521/G052100/20250806048/": "https://www.4gamer.net/games/521/G052100/20250806048/SS/022.jpg",
-    "https://www.4gamer.net/games/935/G093511/20250806046/": "https://www.4gamer.net/games/935/G093511/20250806046/SS/001.png"
+    "https://www.4gamer.net/games/935/G093511/20250806046/": "https://www.4gamer.net/games/935/G093511/20250806046/SS/001.png",
+    "https://www.4gamer.net/games/727/G072787/20250806051/": "https://www.4gamer.net/games/727/G072787/20250806051/SS/003.jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "d497421cc6005b97932a26970545d3ae",
@@ -10174,7 +10185,7 @@
     "https://www.lifehacker.jp/feed/index.xml": "c608876b1f9efe08a135f56492e5d2ba",
     "https://itainews.com/index.rdf": "5f4072fa94076e3b6181d718c19bde3b",
     "https://www.gizmodo.jp/atom.xml": "7c23cffee2e0537ecc622db4dd402e40",
-    "https://www.4gamer.net/rss/index.xml": "04b16674bd7099daf06b2525d94192c5",
+    "https://www.4gamer.net/rss/index.xml": "f76c71b84a8481627d14bfb3ed632428",
     "https://daily-gadget.net/feed/": "92202d14f9355bfcc65c04b6f6de3cfb"
   }
 }
