@@ -9779,6 +9779,26 @@
       "site": "4Gamer.net − 最新記事",
       "has_image": true,
       "processed_at": "2025-08-06T10:43:47.098446"
+    },
+    "https://www.lifehacker.jp/article/2508-costorypo-suisoku1-start-1544458937/": {
+      "title": "ライフハッカー・ジャパン閂「高機能枕」という名の自己投資。寝返りをサポートして朝の目覚めが快適に",
+      "link": "https://www.lifehacker.jp/article/2508-costorypo-suisoku1-start-1544458937/",
+      "pubDate": "2025-08-06T10:45:00+00:00",
+      "description": "自分に合う枕が見つからない方へ。「睡速1.0」は独自のX型形状で幅広い寝姿勢にフィットする高機能枕です。仰向け、横向き、うつ伏せでも首や肩をしっかり支え理想の寝姿勢へ。厳選の中材が生むモチモチの絶妙な寝心地と洗濯機で丸洗いできる手軽さが特長。寝返りがスムーズになり朝の目覚めが快適になります。",
+      "content": "<img src=\"https://media.loom-app.com/loom/2025/08/03/327853bc-cbd1-4335-a926-6b208c61555f/original.jpg?w=1200&h=630&f=jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>自分に合う枕が見つからない方へ。「睡速1.0」は独自のX型形状で幅広い寝姿勢にフィットする高機能枕です。仰向け、横向き、うつ伏せでも首や肩をしっかり支え理想の寝姿勢へ。厳選の中材が生むモチモチの絶妙な寝心地と洗濯機で丸洗いできる手軽さが特長。寝返りがスムーズになり朝の目覚めが快適になります。",
+      "site": "ライフハッカー・ジャパン",
+      "has_image": true,
+      "processed_at": "2025-08-06T10:57:40.235781"
+    },
+    "https://www.4gamer.net/games/930/G093077/20250806052/": {
+      "title": "4Gamer.net − 最新記事閂「くまのレストラン」や「メグとばけもの」などのパラレルワールドを巡る短編ADV「猫の願いが叶うなら」，Steamで配信開始。価格は無料",
+      "link": "https://www.4gamer.net/games/930/G093077/20250806052/",
+      "pubDate": "2025-08-06T10:42:56+00:00",
+      "description": "Odencatは本日，PC用ソフト「猫の願いが叶うなら」の配信をSteamで開始した。価格は無料。ドット絵で描かれた本作は，おでんキャットを追いかけて「くまのレストラン」や「メグとばけもの」など，同社が手がけた作品のパラレルワールドを旅する短編アドベンチャーゲームだ。",
+      "content": "<img src=\"https://www.4gamer.net/games/930/G093077/20250806052/SS/003.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>Odencatは本日，PC用ソフト「猫の願いが叶うなら」の配信をSteamで開始した。価格は無料。ドット絵で描かれた本作は，おでんキャットを追いかけて「くまのレストラン」や「メグとばけもの」など，同社が手がけた作品のパラレルワールドを旅する短編アドベンチャーゲームだ。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-06T10:57:43.302521"
     }
   },
   "og_images": {
@@ -10344,7 +10364,9 @@
     "https://www.4gamer.net/games/900/G090050/20250806050/": "https://www.4gamer.net/games/900/G090050/20250806050/SS/001.jpg",
     "https://www.lifehacker.jp/article/amazon-timesale-fes-2025-0806-2/": "https://media.loom-app.com/loom/2025/08/06/4cb1bcd5-2bc2-4f37-980c-d8d95f92026d/original.png?w=1200&h=630&f=jpg",
     "https://itainews.com/archives/2051676.html": "https://livedoor.blogimg.jp/dqnplus/imgs/0/4/04021eed-s.png",
-    "https://www.4gamer.net/games/851/G085111/20250806055/": "https://www.4gamer.net/games/851/G085111/20250806055/SS/002.jpg"
+    "https://www.4gamer.net/games/851/G085111/20250806055/": "https://www.4gamer.net/games/851/G085111/20250806055/SS/002.jpg",
+    "https://www.lifehacker.jp/article/2508-costorypo-suisoku1-start-1544458937/": "https://media.loom-app.com/loom/2025/08/03/327853bc-cbd1-4335-a926-6b208c61555f/original.jpg?w=1200&h=630&f=jpg",
+    "https://www.4gamer.net/games/930/G093077/20250806052/": "https://www.4gamer.net/games/930/G093077/20250806052/SS/003.jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "4cebdc98f52c046b9721e75d0ce29e3c",
@@ -10353,10 +10375,10 @@
     "http://yaraon-blog.com/feed": "f08ea88b9021d93b9116afc0bf13bcbb",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf": "2f23dfc0c2d13f5e897c2a96c48c378f",
     "http://blog.livedoor.jp/news23vip/index.rdf": "41711b7894644e4cd83830d77d4e748c",
-    "https://www.lifehacker.jp/feed/index.xml": "2e8cf142fc2131cb4c481c96a2818d93",
+    "https://www.lifehacker.jp/feed/index.xml": "b43842bd99135db7c971af3f7f7e4256",
     "https://itainews.com/index.rdf": "b1e92dd181139400f08dd2e1afa3d4ba",
     "https://www.gizmodo.jp/atom.xml": "0f62ad1b0152243e1635a5e7c113bbfc",
-    "https://www.4gamer.net/rss/index.xml": "7d1ec14507535a87a3729528d58ce169",
+    "https://www.4gamer.net/rss/index.xml": "626363fe0e5202063f2fa87e3cf7690a",
     "https://daily-gadget.net/feed/": "92202d14f9355bfcc65c04b6f6de3cfb"
   }
 }
