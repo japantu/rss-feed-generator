@@ -9929,6 +9929,26 @@
       "site": "ライフハッカー・ジャパン",
       "has_image": true,
       "processed_at": "2025-08-06T11:46:43.276714"
+    },
+    "https://www.lifehacker.jp/article/machi-ya-toughbigslingbagad-review2-825373/": {
+      "title": "ライフハッカー・ジャパン閂PCバッグに悩む全デスクワーカーへ。「タフビッグスリング アド」がちょうどいい理由",
+      "link": "https://www.lifehacker.jp/article/machi-ya-toughbigslingbagad-review2-825373/",
+      "pubDate": "2025-08-06T11:45:00+00:00",
+      "description": "PCを持ち運ぶ都市生活者やノマドワーカーに最適な「タフビッグスリングバッグ アド」。その名のとおり傷や水に強い高耐久素材を採用。13インチPCを収納しつつマチが拡張する容量可変機能が魅力です。ドイツFIDLOCK社製マグネットバックルが快適な操作性を生み出します。ミニマルなデザインはビジネスカジュアルにも馴染み日々の移動をスマートにします。バッグに通勤やカフェ作業での機能美を求める方におススメできます。",
+      "content": "<img src=\"https://media.loom-app.com/loom/2025/07/29/ef9c32cd-2853-4c47-ae49-2a46174f67e3/original.jpg?w=1200&h=630&f=jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>PCを持ち運ぶ都市生活者やノマドワーカーに最適な「タフビッグスリングバッグ アド」。その名のとおり傷や水に強い高耐久素材を採用。13インチPCを収納しつつマチが拡張する容量可変機能が魅力です。ドイツFIDLOCK社製マグネットバックルが快適な操作性を生み出します。ミニマルなデザインはビジネスカジュアルにも馴染み日々の移動をスマートにします。バッグに通勤やカフェ作業での機能美を求める方におススメできます。",
+      "site": "ライフハッカー・ジャパン",
+      "has_image": true,
+      "processed_at": "2025-08-06T11:53:29.685737"
+    },
+    "https://www.4gamer.net/games/866/G086614/20250806060/": {
+      "title": "4Gamer.net − 最新記事閂「ELDEN RING NIGHTREIGN」，第2弾2週目の常世の王は“霧の裂け目”に。出現期間は8月7日10：00から14日9：59まで",
+      "link": "https://www.4gamer.net/games/866/G086614/20250806060/",
+      "pubDate": "2025-08-06T11:51:26+00:00",
+      "description": "フロム・ソフトウェアは2025年8月5日，サバイバルアクション「ELDENRINGNIGHTREIGN」の特別なボスキャラクター「常世の王」の，第2弾2週目のボスを発表した。今回明かされた常世の王は，氷のブレスやギミックのある大技を特徴とする巨大なドラゴン「霧の裂け目」だ。",
+      "content": "<img src=\"https://www.4gamer.net/games/866/G086614/20250806060/SS/004.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>フロム・ソフトウェアは2025年8月5日，サバイバルアクション「ELDENRINGNIGHTREIGN」の特別なボスキャラクター「常世の王」の，第2弾2週目のボスを発表した。今回明かされた常世の王は，氷のブレスやギミックのある大技を特徴とする巨大なドラゴン「霧の裂け目」だ。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-06T11:53:32.380708"
     }
   },
   "og_images": {
@@ -10505,7 +10525,9 @@
     "https://www.4gamer.net/games/519/G051983/20250806054/": "https://www.4gamer.net/games/519/G051983/20250806054/SS/001.jpg",
     "https://www.4gamer.net/games/155/G015581/20250806057/": "https://www.4gamer.net/games/155/G015581/20250806057/SS/002.jpg",
     "https://itainews.com/archives/2051678.html": "https://livedoor.blogimg.jp/dqnplus/imgs/e/f/ef11af1d-s.png",
-    "https://www.lifehacker.jp/article/2508-hydration-item-matome/": "https://media.loom-app.com/loom/2025/08/06/93473c8e-48b5-48d5-951e-3baf8972e19a/original.jpg?w=1200&h=630&f=jpg"
+    "https://www.lifehacker.jp/article/2508-hydration-item-matome/": "https://media.loom-app.com/loom/2025/08/06/93473c8e-48b5-48d5-951e-3baf8972e19a/original.jpg?w=1200&h=630&f=jpg",
+    "https://www.lifehacker.jp/article/machi-ya-toughbigslingbagad-review2-825373/": "https://media.loom-app.com/loom/2025/07/29/ef9c32cd-2853-4c47-ae49-2a46174f67e3/original.jpg?w=1200&h=630&f=jpg",
+    "https://www.4gamer.net/games/866/G086614/20250806060/": "https://www.4gamer.net/games/866/G086614/20250806060/SS/004.jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "4cebdc98f52c046b9721e75d0ce29e3c",
@@ -10514,10 +10536,10 @@
     "http://yaraon-blog.com/feed": "0661ee459eef0991d3f3bbbd0836c691",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf": "0f381aea1764fde0f6983f53af146a52",
     "http://blog.livedoor.jp/news23vip/index.rdf": "41711b7894644e4cd83830d77d4e748c",
-    "https://www.lifehacker.jp/feed/index.xml": "b0c3dee933e8d554b9e265fd7889583a",
+    "https://www.lifehacker.jp/feed/index.xml": "7d60ffffbc95f216d35436957057e7d4",
     "https://itainews.com/index.rdf": "95bf283ec1cda2b54a9bfad9cd13edad",
     "https://www.gizmodo.jp/atom.xml": "d6253935e199b23de09722acf9bdc5f4",
-    "https://www.4gamer.net/rss/index.xml": "3170af2678c7b5f8c07fcf00a7b63879",
+    "https://www.4gamer.net/rss/index.xml": "1da759b2a319819e74c76687f08ebbc8",
     "https://daily-gadget.net/feed/": "92202d14f9355bfcc65c04b6f6de3cfb"
   }
 }
