@@ -9349,6 +9349,26 @@
       "site": "ギズモード・ジャパン",
       "has_image": true,
       "processed_at": "2025-08-06T07:41:00.329345"
+    },
+    "https://www.4gamer.net/games/718/G071846/20250806038/": {
+      "title": "4Gamer.net − 最新記事閂「魁 三国志大戦」，Pontaの協賛による「頂上決戦大会」を8月23日19：00に開催。公式YouTubeで生配信を予定",
+      "link": "https://www.4gamer.net/games/718/G071846/20250806038/",
+      "pubDate": "2025-08-06T07:41:39+00:00",
+      "description": "doublejump.tokyoは本日（2025年8月6日），軍勢カードバトルゲーム「魁三国志大戦-BattleofThreeKingdoms-」で，「魁三国志大戦頂上決戦大会黎明ノ陣第三節presentedbyPonta」を8月23日19：00に開催すると発表した。公式YouTubeチャンネルにて，リアルタイムで生配信される予定だ。",
+      "content": "<img src=\"https://www.4gamer.net/games/718/G071846/20250806038/SS/001.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>doublejump.tokyoは本日（2025年8月6日），軍勢カードバトルゲーム「魁三国志大戦-BattleofThreeKingdoms-」で，「魁三国志大戦頂上決戦大会黎明ノ陣第三節presentedbyPonta」を8月23日19：00に開催すると発表した。公式YouTubeチャンネルにて，リアルタイムで生配信される予定だ。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-06T07:55:01.792464"
+    },
+    "https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0806-1.html": {
+      "title": "ギズモード・ジャパン閂静寂がさらに進化。BOSEが誇る新作ノイズキャンセリングイヤホンが10％ポイント還元 #楽天セール",
+      "link": "https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0806-1.html",
+      "pubDate": "2025-08-06T07:55:00+00:00",
+      "description": "こちらは｢かいサポ（お買いものサポーターチーム）｣が編集・執筆した記事です。\n楽天市場では、8月11日（月）1時59分まで複数ショップでの買い回りで還元ポイントがアップする｢お買い物マラソン｣が開催中です。\n現在、BOSEの新作ワイヤレスイヤホン、アイリスオーヤマのサーキュレーターなど、人気のアイテムがお得に登場しています。 \nなお、以下の表示価格は執筆時現在のもの。変更や売り切れの可能性もありま...",
+      "content": "<img src=\"https://media.loom-app.com/gizmodo/dist/images/2025/08/06/20250806bose1.jpg?w=1280&h=630&f=jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>こちらは｢かいサポ（お買いものサポーターチーム）｣が編集・執筆した記事です。\n楽天市場では、8月11日（月）1時59分まで複数ショップでの買い回りで還元ポイントがアップする｢お買い物マラソン｣が開催中です。\n現在、BOSEの新作ワイヤレスイヤホン、アイリスオーヤマのサーキュレーターなど、人気のアイテムがお得に登場しています。 \nなお、以下の表示価格は執筆時現在のもの。変更や売り切れの可能性もありま...\n                <a href=\"https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0806-1.html\">続きを読む</a>",
+      "site": "ギズモード・ジャパン",
+      "has_image": true,
+      "processed_at": "2025-08-06T07:55:05.121636"
     }
   },
   "og_images": {
@@ -9884,7 +9904,9 @@
     "https://www.4gamer.net/games/897/G089781/20250806034/": "https://www.4gamer.net/games/897/G089781/20250806034/SS/001.jpg",
     "https://www.gizmodo.jp/2025/08/machi-ya-crowviewnote-start-860924.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/03/machi-ya-crowviewnote-start-860924-thumb.jpg?w=1280&h=630&f=jpg",
     "https://www.lifehacker.jp/article/rakuten-sale-2025-0806-1/": "https://media.loom-app.com/loom/2025/08/06/0daaec49-847d-43e3-9f4b-9ecf2ee2d052/original.jpg?w=1200&h=630&f=jpg",
-    "https://www.gizmodo.jp/2025/08/wave_sunglasses-1.html": "https://media.loom-app.com/gizmodo/dist/images/2023/09/11/_37A9788.JPG?w=1280&h=630&f=jpg"
+    "https://www.gizmodo.jp/2025/08/wave_sunglasses-1.html": "https://media.loom-app.com/gizmodo/dist/images/2023/09/11/_37A9788.JPG?w=1280&h=630&f=jpg",
+    "https://www.4gamer.net/games/718/G071846/20250806038/": "https://www.4gamer.net/games/718/G071846/20250806038/SS/001.jpg",
+    "https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0806-1.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/06/20250806bose1.jpg?w=1280&h=630&f=jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "d497421cc6005b97932a26970545d3ae",
@@ -9895,8 +9917,8 @@
     "http://blog.livedoor.jp/news23vip/index.rdf": "ce9996ae59d8e15545c98e0ac1c2c169",
     "https://www.lifehacker.jp/feed/index.xml": "42c3ec058216671731251009cb1b6f73",
     "https://itainews.com/index.rdf": "c04e977d466d76161dc512e5cb10fecd",
-    "https://www.gizmodo.jp/atom.xml": "07cb5615e5cb662cc75830856ac47209",
-    "https://www.4gamer.net/rss/index.xml": "8730838102792f13eff4dc26840305eb",
+    "https://www.gizmodo.jp/atom.xml": "167f425aea672b91e16f829ed81b9daa",
+    "https://www.4gamer.net/rss/index.xml": "b041d01d421ff6bfd5e7b346f346be36",
     "https://daily-gadget.net/feed/": "92202d14f9355bfcc65c04b6f6de3cfb"
   }
 }
