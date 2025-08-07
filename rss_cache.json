@@ -13029,6 +13029,16 @@
       "site": "キニ速",
       "has_image": true,
       "processed_at": "2025-08-07T23:47:19.341324"
+    },
+    "https://www.lifehacker.jp/article/2508-amazon-barthshowerhead/": {
+      "title": "ライフハッカー・ジャパン閂「重炭酸バブルシャワー」の新感覚。BARTHで毎日のバスタイムが待ちきれない",
+      "link": "https://www.lifehacker.jp/article/2508-amazon-barthshowerhead/",
+      "pubDate": "2025-08-07T23:45:00+00:00",
+      "description": "毎日のシャワータイムを、より心地よく特別な時間に変えてくれるアイテムとして注目されているのが、BARTHの「マイクロナノバブル シャワーヘッド」。\n毛穴よりも小さな微細な泡と重炭酸タブレットの組み合わせで、お肌や髪をすこやかに保つことをサポートします。\nBARTHの「中性重炭酸入浴剤」とあわせて使うことで、1日の疲れをリセットし、リラックスした気分へと導くバスタイムを演出できます。",
+      "content": "<img src=\"https://media.loom-app.com/loom/2025/08/07/2de00c77-acb5-45c3-886e-cd423d51bf3b/original.jpg?w=1200&h=630&f=jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>毎日のシャワータイムを、より心地よく特別な時間に変えてくれるアイテムとして注目されているのが、BARTHの「マイクロナノバブル シャワーヘッド」。\n毛穴よりも小さな微細な泡と重炭酸タブレットの組み合わせで、お肌や髪をすこやかに保つことをサポートします。\nBARTHの「中性重炭酸入浴剤」とあわせて使うことで、1日の疲れをリセットし、リラックスした気分へと導くバスタイムを演出できます。",
+      "site": "ライフハッカー・ジャパン",
+      "has_image": true,
+      "processed_at": "2025-08-07T23:54:38.102502"
     }
   },
   "og_images": {
@@ -13788,7 +13798,8 @@
     "https://itainews.com/archives/2051730.html": "https://livedoor.blogimg.jp/dqnplus/imgs/7/3/7336352b-s.png",
     "https://www.4gamer.net/games/991/G999104/20250805011/": "https://www.4gamer.net/games/991/G999104/20250805011/SS/009.jpg",
     "https://www.4gamer.net/games/649/G064901/20250728038/": "https://www.4gamer.net/games/649/G064901/20250728038/SS/001.jpg",
-    "https://www.4gamer.net/games/779/G077901/20250726011/": "https://www.4gamer.net/games/779/G077901/20250726011/SS/001.jpg"
+    "https://www.4gamer.net/games/779/G077901/20250726011/": "https://www.4gamer.net/games/779/G077901/20250726011/SS/001.jpg",
+    "https://www.lifehacker.jp/article/2508-amazon-barthshowerhead/": "https://media.loom-app.com/loom/2025/08/07/2de00c77-acb5-45c3-886e-cd423d51bf3b/original.jpg?w=1200&h=630&f=jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "e704ed40c25412d94bfc48eeed6dee1a",
@@ -13797,7 +13808,7 @@
     "http://yaraon-blog.com/feed": "347b92509ecee90c630171b6e2bbf1d2",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf": "73dba485ccb7860366377780e8c22060",
     "http://blog.livedoor.jp/news23vip/index.rdf": "8f31d911e6aad7b502df21a70778e0c1",
-    "https://www.lifehacker.jp/feed/index.xml": "3bd1480799c4b5e87203219520363c7b",
+    "https://www.lifehacker.jp/feed/index.xml": "98d28ee066e8819745ca7f053b7ac74f",
     "https://itainews.com/index.rdf": "e0bc87a202b9ff5ce1319750e5cecd7c",
     "https://www.gizmodo.jp/atom.xml": "87c03be902c774ce03630f6521d1dbbd",
     "https://www.4gamer.net/rss/index.xml": "27a2a8a111cf5211290b5e1043c56a9c",
