@@ -12269,6 +12269,16 @@
       "site": "ギズモード・ジャパン",
       "has_image": true,
       "processed_at": "2025-08-07T11:31:49.452601"
+    },
+    "https://www.4gamer.net/games/999/G999904/20250807061/": {
+      "title": "4Gamer.net − 最新記事閂スマホ版「モンスターファーム」が半額！ コーエーテクモゲームスのスマホ用ソフトがお得な「サマーセール」がスタート",
+      "link": "https://www.4gamer.net/games/999/G999904/20250807061/",
+      "pubDate": "2025-08-07T11:36:44+00:00",
+      "description": "コーエーテクモゲームスは本日（2025年8月7日），同社が配信中のスマートフォン用ソフトを対象とする「サマーセール」を開始した。今回のセールでは，「三國志」シリーズや「信長の野望」シリーズといった歴史シミュレーションゲームに加え，モンスターを育成する「モンスターファーム」シリーズ作品も対象になっている。",
+      "content": "<img src=\"https://www.4gamer.net/games/999/G999904/20250807061/SS/001.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>コーエーテクモゲームスは本日（2025年8月7日），同社が配信中のスマートフォン用ソフトを対象とする「サマーセール」を開始した。今回のセールでは，「三國志」シリーズや「信長の野望」シリーズといった歴史シミュレーションゲームに加え，モンスターを育成する「モンスターファーム」シリーズ作品も対象になっている。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-07T11:46:36.609782"
     }
   },
   "og_images": {
@@ -12997,7 +13007,8 @@
     "https://www.gizmodo.jp/2025/08/ios-26-new-lock-screen.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/06/20250806_63437_01.jpeg?w=1280&h=630&f=jpg",
     "https://www.4gamer.net/games/873/G087373/20250806033/": "https://www.4gamer.net/games/873/G087373/20250806033/TN/002.jpg",
     "https://www.4gamer.net/games/449/G044914/20250807059/": "https://www.4gamer.net/games/449/G044914/20250807059/SS/006.jpg",
-    "https://www.gizmodo.jp/2025/08/mynumbercard-iphone-apple-wallet.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/07/mynumber_thum.png?w=1280&h=630&f=jpg"
+    "https://www.gizmodo.jp/2025/08/mynumbercard-iphone-apple-wallet.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/07/mynumber_thum.png?w=1280&h=630&f=jpg",
+    "https://www.4gamer.net/games/999/G999904/20250807061/": "https://www.4gamer.net/games/999/G999904/20250807061/SS/001.jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "0abc96ec32bf8cddc86e51ee24cec8bf",
@@ -13009,7 +13020,7 @@
     "https://www.lifehacker.jp/feed/index.xml": "a0960b288f5c833dc70c066701375de0",
     "https://itainews.com/index.rdf": "d77796c6bdece34138a22989cf26709d",
     "https://www.gizmodo.jp/atom.xml": "7380674937640ffc1709b444dea0ba7f",
-    "https://www.4gamer.net/rss/index.xml": "0ce6185f9ba6de5a031c0c70bc477010",
+    "https://www.4gamer.net/rss/index.xml": "510d4232e43448c4eaa969f9d88ec476",
     "https://daily-gadget.net/feed/": "037a402717cb19226523a283d6099c7c"
   }
 }
