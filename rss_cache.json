@@ -11999,6 +11999,26 @@
       "site": "4Gamer.net − 最新記事",
       "has_image": true,
       "processed_at": "2025-08-07T09:36:30.147506"
+    },
+    "https://www.4gamer.net/games/085/G008540/20250807051/": {
+      "title": "4Gamer.net − 最新記事閂ソニーグループ，2026年3月期第1四半期の連結業績を発表。主力のゲーム＆ネットワークサービス分野の営業利益は，前年同期比2倍超",
+      "link": "https://www.4gamer.net/games/085/G008540/20250807051/",
+      "pubDate": "2025-08-07T09:38:39+00:00",
+      "description": "ソニーグループは本日（2025年8月7日），2026年3月期第1四半期の連結業績（2025年4月1日〜2025年6月30日）を発表した。グループの売上高は前年同期比で563億円（2％）増，営業利益は908億円（36％）増となった。ゲーム＆ネットワークサービス分野の営業利益は，前年同期比2倍超を記録した。",
+      "content": "<img src=\"https://www.4gamer.net/games/085/G008540/20250807051/SS/004.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>ソニーグループは本日（2025年8月7日），2026年3月期第1四半期の連結業績（2025年4月1日〜2025年6月30日）を発表した。グループの売上高は前年同期比で563億円（2％）増，営業利益は908億円（36％）増となった。ゲーム＆ネットワークサービス分野の営業利益は，前年同期比2倍超を記録した。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-07T09:52:37.925122"
+    },
+    "https://www.4gamer.net/games/414/G041434/20250807050/": {
+      "title": "4Gamer.net − 最新記事閂「一番くじ アニメ『ウマ娘 シンデレラグレイ』 灰の怪物vs白い稲妻」，12月22日に発売。オグリキャップ，タマモクロスの1/7フィギュアが登場",
+      "link": "https://www.4gamer.net/games/414/G041434/20250807050/",
+      "pubDate": "2025-08-07T09:38:13+00:00",
+      "description": "BANDAISPIRITSは本日（2025年8月7日），「一番くじアニメ『ウマ娘シンデレラグレイ』灰の怪物vs白い稲妻」を12月22日に発売すると発表した。価格は1回3000円（税込）。今回の一番くじでは，TVアニメ「ウマ娘シンデレラグレイ」に登場するオグリキャップ，タマモクロスの1/7Gracemasterフィギュアが登場する。",
+      "content": "<img src=\"https://www.4gamer.net/games/414/G041434/20250807050/SS/001.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>BANDAISPIRITSは本日（2025年8月7日），「一番くじアニメ『ウマ娘シンデレラグレイ』灰の怪物vs白い稲妻」を12月22日に発売すると発表した。価格は1回3000円（税込）。今回の一番くじでは，TVアニメ「ウマ娘シンデレラグレイ」に登場するオグリキャップ，タマモクロスの1/7Gracemasterフィギュアが登場する。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-07T09:52:39.170643"
     }
   },
   "og_images": {
@@ -12708,7 +12728,9 @@
     "https://www.4gamer.net/games/700/G070077/20250807049/": "https://www.4gamer.net/games/700/G070077/20250807049/SS/001.jpg",
     "https://www.4gamer.net/games/935/G093521/20250807048/": "https://www.4gamer.net/games/935/G093521/20250807048/SS/001.jpg",
     "https://www.4gamer.net/games/266/G026651/20250807039/": "https://www.4gamer.net/games/266/G026651/20250807039/SS/006.jpg",
-    "https://www.4gamer.net/games/883/G088357/20250807047/": "https://www.4gamer.net/games/883/G088357/20250807047/SS/002.jpg"
+    "https://www.4gamer.net/games/883/G088357/20250807047/": "https://www.4gamer.net/games/883/G088357/20250807047/SS/002.jpg",
+    "https://www.4gamer.net/games/085/G008540/20250807051/": "https://www.4gamer.net/games/085/G008540/20250807051/SS/004.jpg",
+    "https://www.4gamer.net/games/414/G041434/20250807050/": "https://www.4gamer.net/games/414/G041434/20250807050/SS/001.jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "0abc96ec32bf8cddc86e51ee24cec8bf",
@@ -12720,7 +12742,7 @@
     "https://www.lifehacker.jp/feed/index.xml": "0c71fee060620c79de6d91b760a2931e",
     "https://itainews.com/index.rdf": "50dc2ce2366c1b04af9c86aa737d9914",
     "https://www.gizmodo.jp/atom.xml": "46f2afd7ccaeccae072312e470413f64",
-    "https://www.4gamer.net/rss/index.xml": "5cd9f4d94e71153b4b9dfcad594bbc60",
+    "https://www.4gamer.net/rss/index.xml": "888c3a9cc69e6be9631654ae08625442",
     "https://daily-gadget.net/feed/": "037a402717cb19226523a283d6099c7c"
   }
 }
