@@ -12859,6 +12859,16 @@
       "site": "デイリーガジェット",
       "has_image": true,
       "processed_at": "2025-08-07T21:42:16.506496"
+    },
+    "https://hamusoku.com/archives/10910965.html": {
+      "title": "ハムスター速報閂【ピストン赤澤】石破政権　トランプ関税交渉で虚偽の交渉結果を公表していた事が判明「関税15%と関税15%上乗せを勘違いして合意」",
+      "link": "https://hamusoku.com/archives/10910965.html",
+      "pubDate": "2025-08-07T21:44:03+00:00",
+      "description": "",
+      "content": "<div align=\"center\"><a href=\"https://livedoor.blogimg.jp/hamusoku/imgs/3/1/31cafe81.jpg\" target=\"_blank\" title=\"K10014886741_2508071305_0807131038_02_05\"><img alt=\"K10014886741_2508071305_0807131038_02_05\" border=\"0\" class=\"pict\" height=\"281\" hspace=\"5\" src=\"https://livedoor.blogimg.jp/hamusoku/imgs/3/1/31cafe81-s.jpg\" width=\"500\" /></a></div><br />\n<br />\n<br />\n\n<a href=\"https://hamusoku.com/archives/10910965.html\">続きを読む</a>",
+      "site": "ハムスター速報",
+      "has_image": true,
+      "processed_at": "2025-08-07T21:52:47.563328"
     }
   },
   "og_images": {
@@ -13610,7 +13620,7 @@
     "https://www.4gamer.net/games/875/G087562/20250805031/": "https://www.4gamer.net/games/875/G087562/20250805031/SS/007.jpg"
   },
   "feed_hashes": {
-    "https://hamusoku.com/index.rdf": "a3a27844bbeabc607eafcfa44b20d1cd",
+    "https://hamusoku.com/index.rdf": "e704ed40c25412d94bfc48eeed6dee1a",
     "http://himasoku.com/index.rdf": "ba8bbc87fa2eb9a57cbe2973a3ecf977",
     "http://blog.livedoor.jp/kinisoku/index.rdf": "14592d0e1587c04cbb1a1f12d5d0350f",
     "http://yaraon-blog.com/feed": "347b92509ecee90c630171b6e2bbf1d2",
