@@ -15069,6 +15069,16 @@
       "site": "やらおん！",
       "has_image": true,
       "processed_at": "2025-08-08T13:47:54.197334"
+    },
+    "http://yaraon-blog.com/archives/281601": {
+      "title": "やらおん！閂【悲報】AI絵じゃシコれないおじさん、ガチで絶滅するｗｗｗｗ",
+      "link": "http://yaraon-blog.com/archives/281601",
+      "pubDate": "2025-08-08T13:49:30+00:00",
+      "description": "",
+      "content": "<p><a href=\"https://blog-imgs-163.fc2.com/y/a/r/yarakan/20250808224837c1a.jpg\" rel=\"noopener\" target=\"_blank\"><img alt=\"タイトルなし\" border=\"0\" height=\"399\" src=\"https://blog-imgs-163.fc2.com/y/a/r/yarakan/20250808224837c1as.jpg\" width=\"555\" /></a></p>",
+      "site": "やらおん！",
+      "has_image": true,
+      "processed_at": "2025-08-08T14:00:40.547463"
     }
   },
   "og_images": {
@@ -15979,7 +15989,7 @@
     "https://hamusoku.com/index.rdf": "a6f70946633a55f3b3450f99a87240d7",
     "http://himasoku.com/index.rdf": "ba8bbc87fa2eb9a57cbe2973a3ecf977",
     "http://blog.livedoor.jp/kinisoku/index.rdf": "c62c24f3373db7866e7358de2f680a18",
-    "http://yaraon-blog.com/feed": "af64a165a81bc4cb8e37baf27b21f396",
+    "http://yaraon-blog.com/feed": "b9935b4a073416d64d2c0089032fd9e4",
     "http://blog.livedoor.jp/bluejay01-review/index.rdf": "494646f8242dec01c870629cd4fe4914",
     "http://blog.livedoor.jp/news23vip/index.rdf": "cc651d8c836354c5904e684c5afcce69",
     "https://www.lifehacker.jp/feed/index.xml": "8a751bcfbf325bf3e17ed5b3317cd3d1",
