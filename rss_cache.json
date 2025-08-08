@@ -14439,6 +14439,26 @@
       "site": "4Gamer.net − 最新記事",
       "has_image": true,
       "processed_at": "2025-08-08T09:36:34.402360"
+    },
+    "https://www.4gamer.net/games/709/G070966/20250808048/": {
+      "title": "4Gamer.net − 最新記事閂「METAL GEAR SOLID Δ: SNAKE EATER」，オンライン対戦モード“FOX HUNT”の配信時期が2025年秋に決定",
+      "link": "https://www.4gamer.net/games/709/G070966/20250808048/",
+      "pubDate": "2025-08-08T09:49:22+00:00",
+      "description": "KONAMIは本日（2025年8月8日），「METALGEARSOLIDΔ:SNAKEEATER」に搭載予定のオンライン対戦モード「FOXHUNT」の配信時期が2025年秋に決定したと発表し，新たなスクリーンショットを公開した。",
+      "content": "<img src=\"https://www.4gamer.net/games/709/G070966/20250808048/SS/003.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>KONAMIは本日（2025年8月8日），「METALGEARSOLIDΔ:SNAKEEATER」に搭載予定のオンライン対戦モード「FOXHUNT」の配信時期が2025年秋に決定したと発表し，新たなスクリーンショットを公開した。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-08T09:52:34.968926"
+    },
+    "https://www.4gamer.net/games/897/G089773/20250808047/": {
+      "title": "4Gamer.net − 最新記事閂Switch2版「ボーダーランズ4」，パッケージ版の予約受付を開始。実際のゲームプレイ映像，カットシーンを含む公式トレイラーも公開に",
+      "link": "https://www.4gamer.net/games/897/G089773/20250808047/",
+      "pubDate": "2025-08-08T09:36:30+00:00",
+      "description": "2Kは本日（2025年8月8日），同社が10月3日に発売予定のNintendoSwitch2版「ボーダーランズ4」について，パッケージ版の予約受付を開始した。パッケージ版の予約開始にあわせて，Switch2版の公式トレイラーも公開された。映像では，実際のゲームプレイ映像やカットシーンなどを確認できる。",
+      "content": "<img src=\"https://www.4gamer.net/games/897/G089773/20250808047/SS/001.jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>2Kは本日（2025年8月8日），同社が10月3日に発売予定のNintendoSwitch2版「ボーダーランズ4」について，パッケージ版の予約受付を開始した。パッケージ版の予約開始にあわせて，Switch2版の公式トレイラーも公開された。映像では，実際のゲームプレイ映像やカットシーンなどを確認できる。",
+      "site": "4Gamer.net − 最新記事",
+      "has_image": true,
+      "processed_at": "2025-08-08T09:52:36.221582"
     }
   },
   "og_images": {
@@ -15301,7 +15321,9 @@
     "https://www.lifehacker.jp/article/2508_roomie_cio-novaport-solo-2-65w/": "https://media.loom-app.com/loom/2025/08/07/5b47e60d-9132-4d81-ab6d-fcbb90188972/original.png?w=1200&h=630&f=jpg",
     "https://itainews.com/archives/2051744.html": "https://livedoor.blogimg.jp/dqnplus/imgs/6/d/6de21ba4-s.png",
     "https://www.4gamer.net/games/935/G093540/20250808045/": "https://www.4gamer.net/games/935/G093540/20250808045/SS/001.jpg",
-    "https://www.4gamer.net/games/805/G080590/20250808046/": "https://www.4gamer.net/games/805/G080590/20250808046/SS/001.jpg"
+    "https://www.4gamer.net/games/805/G080590/20250808046/": "https://www.4gamer.net/games/805/G080590/20250808046/SS/001.jpg",
+    "https://www.4gamer.net/games/709/G070966/20250808048/": "https://www.4gamer.net/games/709/G070966/20250808048/SS/003.jpg",
+    "https://www.4gamer.net/games/897/G089773/20250808047/": "https://www.4gamer.net/games/897/G089773/20250808047/SS/001.jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "274ff68265637d3a71a5620debcd37f8",
@@ -15313,7 +15335,7 @@
     "https://www.lifehacker.jp/feed/index.xml": "c439052559e935b52c72e8bd61fa9ddf",
     "https://itainews.com/index.rdf": "25eeee792e77011e03f4546e4bbefc54",
     "https://www.gizmodo.jp/atom.xml": "f9318f44a04a1e00a4a7b653ab202217",
-    "https://www.4gamer.net/rss/index.xml": "cee8d4f190934cf82b23e45eb129b97b",
+    "https://www.4gamer.net/rss/index.xml": "59514296301946a5353a246fc6321bbd",
     "https://daily-gadget.net/feed/": "454c3333cc50fdcb63a10da077857823"
   }
 }
