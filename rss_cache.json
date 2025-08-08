@@ -14199,6 +14199,16 @@
       "site": "4Gamer.net − 最新記事",
       "has_image": true,
       "processed_at": "2025-08-08T07:49:56.702951"
+    },
+    "https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0808-1.html": {
+      "title": "ギズモード・ジャパン閂もう耳は痛くならない。快適な装着感とプレミアムサウンドをSHOKZのイヤホンで #楽天セール",
+      "link": "https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0808-1.html",
+      "pubDate": "2025-08-08T07:55:00+00:00",
+      "description": "こちらは｢かいサポ（お買いものサポーターチーム）｣が編集・執筆した記事です。\n楽天市場では、8月11日（月）1時59分まで複数ショップでの買い回りで還元ポイントがアップする｢お買い物マラソン｣が開催中です。\n現在、NECのWi-Fi 7対応ホームルータ、Shokzのイヤホン「OpenRun Pro 2」など、人気のアイテムがお得に登場しています。\nなお、以下の表示価格は執筆時現在のもの。変更や売り...",
+      "content": "<img src=\"https://media.loom-app.com/gizmodo/dist/images/2025/08/08/20250808shokz1.jpg?w=1280&h=630&f=jpg\" loading=\"lazy\" style=\"max-width:100%; height:auto;\"><br>こちらは｢かいサポ（お買いものサポーターチーム）｣が編集・執筆した記事です。\n楽天市場では、8月11日（月）1時59分まで複数ショップでの買い回りで還元ポイントがアップする｢お買い物マラソン｣が開催中です。\n現在、NECのWi-Fi 7対応ホームルータ、Shokzのイヤホン「OpenRun Pro 2」など、人気のアイテムがお得に登場しています。\nなお、以下の表示価格は執筆時現在のもの。変更や売り...\n                <a href=\"https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0808-1.html\">続きを読む</a>",
+      "site": "ギズモード・ジャパン",
+      "has_image": true,
+      "processed_at": "2025-08-08T07:56:33.969471"
     }
   },
   "og_images": {
@@ -15044,7 +15054,8 @@
     "https://www.gizmodo.jp/2025/08/honeycomb-wall-cooler-1.html": "https://media.loom-app.com/gizmodo/dist/images/2024/07/05/beehive-wall.jpg?w=1280&h=630&f=jpg",
     "https://itainews.com/archives/2051741.html": "https://livedoor.blogimg.jp/dqnplus/imgs/b/5/b53a39db-s.png",
     "https://www.4gamer.net/games/029/G002975/20250808037/": "https://www.4gamer.net/games/029/G002975/20250808037/SS/001.jpg",
-    "https://www.4gamer.net/games/870/G087004/20250808038/": "https://www.4gamer.net/games/870/G087004/20250808038/SS/003.jpg"
+    "https://www.4gamer.net/games/870/G087004/20250808038/": "https://www.4gamer.net/games/870/G087004/20250808038/SS/003.jpg",
+    "https://www.gizmodo.jp/2025/08/rakuten-sale-2025-0808-1.html": "https://media.loom-app.com/gizmodo/dist/images/2025/08/08/20250808shokz1.jpg?w=1280&h=630&f=jpg"
   },
   "feed_hashes": {
     "https://hamusoku.com/index.rdf": "3cf68700b0cecf27d67bf4280dc30d0d",
@@ -15055,7 +15066,7 @@
     "http://blog.livedoor.jp/news23vip/index.rdf": "ae8e6e31334b932f5a132f531d6d3be1",
     "https://www.lifehacker.jp/feed/index.xml": "e38130c70d59ca114605cf29714cc391",
     "https://itainews.com/index.rdf": "721c87a59b059e4849ea851db9a8c3f6",
-    "https://www.gizmodo.jp/atom.xml": "35f3acf2f64fe3f737845e41cb3ac595",
+    "https://www.gizmodo.jp/atom.xml": "37b49b717c83de209bdc99c348abfb80",
     "https://www.4gamer.net/rss/index.xml": "bf249486290736a1ffee47d8551780cb",
     "https://daily-gadget.net/feed/": "454c3333cc50fdcb63a10da077857823"
   }
