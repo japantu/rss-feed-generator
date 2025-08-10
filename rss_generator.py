@@ -393,9 +393,14 @@ def generate_rss_xml_string(items, base_url=""):
     ElementTree(rss).write(f, encoding="unicode", xml_declaration=True)
     return f.getvalue()
 
+# 既存のrss_generator.pyの内容はそのまま使用
+# 以下の部分だけを修正：
+
 if __name__ == "__main__":
     logging.info("Starting optimized RSS feed generation...")
-    base_url = "https://rss-x2xp.onrender.com/"
+    
+    # GitHub PagesのベースURL（あなたのリポジトリ名に置き換えてください）
+    base_url = "https://github.com/japantu/rss-feed-generator/"
 
     items = fetch_and_generate_items()
     xml_string = generate_rss_xml_string(items, base_url=base_url)
@@ -408,3 +413,5 @@ if __name__ == "__main__":
         f.write(xml_string)
     
     logging.info(f"RSS feed successfully generated and saved to {output_filepath}")
+
+# 注意：上記以外の部分（RSS_URLS、関数定義など）は既存のままです
