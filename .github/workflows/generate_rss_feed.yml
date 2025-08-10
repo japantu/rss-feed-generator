@@ -1,4 +1,4 @@
-name: Update RSS Feed
+name: Update RSS Feed for GitHub Pages
 
 on:
   schedule:
@@ -11,12 +11,19 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時実行の制限
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build:
+  build-rss:
     runs-on: ubuntu-latest
-    timeout-minutes: 4  # 少し余裕を持たせて4分
+    timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
         with:
@@ -60,26 +67,42 @@ jobs:
           echo "Starting RSS generation at $(date)"
           python rss_generator.py
           echo "RSS generation completed at $(date)"
-        
-      - name: Check for changes and commit
+
+      - name: Create index.html for GitHub Pages
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/rss_output.xml rss_cache.json
-          
-          if git diff --quiet --exit-code HEAD; then
-            echo "No changes detected - skipping commit"
-          else
-            echo "Changes detected - committing updates"
-            current_hour=$(date -u +'%H')
-            if [ $current_hour -ge 6 ] && [ $current_hour -le 23 ]; then
-              schedule_type="日中"
-            elif [ $current_hour -ge 1 ] && [ $current_hour -le 5 ]; then
-              schedule_type="深夜"
-            else
-              schedule_type="深夜"
-            fi
-            git commit -m "RSS更新[${schedule_type}] $(TZ='Asia/Tokyo' date +'%m/%d %H:%M')"
-            git push
-            echo "Successfully pushed updates"
-          fi
+          cat > public/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="ja">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Merged RSS Feed</title>
+              <meta http-equiv="refresh" content="0; url=rss_output.xml">
+          </head>
+          <body>
+              <h1>RSS Feed</h1>
+              <p>自動的にRSSフィードにリダイレクトされます...</p>
+              <p><a href="rss_output.xml">RSSフィードを直接開く</a></p>
+          </body>
+          </html>
+          EOF
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: './public'
+
+  # デプロイジョブ
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build-rss
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
