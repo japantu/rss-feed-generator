@@ -400,7 +400,7 @@ if __name__ == "__main__":
     logging.info("Starting optimized RSS feed generation...")
     
     # GitHub PagesのベースURL（あなたのリポジトリ名に置き換えてください）
-    base_url = "https://github.com/japantu/rss-feed-generator/"
+    base_url = "https://japantu.github.io/rss-feed-generator/"
 
     items = fetch_and_generate_items()
     xml_string = generate_rss_xml_string(items, base_url=base_url)
