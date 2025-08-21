@@ -23,7 +23,7 @@ concurrency:
 jobs:
   build-rss:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 6  # 4分→6分に延長
     steps:
       - uses: actions/checkout@v4
         with:
@@ -40,10 +40,10 @@ jobs:
           path: |
             ~/.cache/pip
             rss_cache.json
-          key: ${{ runner.os }}-rss-30day-${{ hashFiles('requirements.txt') }}-${{ hashFiles('rss_cache.json') }}
+          key: ${{ runner.os }}-rss-cache-v2-${{ hashFiles('requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-rss-30day-${{ hashFiles('requirements.txt') }}-
-            ${{ runner.os }}-rss-30day-
+            ${{ runner.os }}-rss-cache-v2-
+            ${{ runner.os }}-rss-cache-
             
       - name: Install dependencies
         run: |
