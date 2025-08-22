@@ -107,7 +107,7 @@ def clean_content_text(content, site_name=""):
     return cleaned.strip()
 
 def extract_og_image_with_cache(page_url, cache):
-    """キャッシュ機能付きOG画像抽出"""
+    """キャッシュ機能付きOG画像抽出（超高速版）"""
     if not page_url:
         return ""
     
@@ -116,7 +116,7 @@ def extract_og_image_with_cache(page_url, cache):
         return cache["og_images"][page_url]
     
     try:
-        response = requests.get(page_url, headers=HEADERS, timeout=3)
+        response = requests.get(page_url, headers=HEADERS, timeout=2)  # 3秒→2秒
         response.raise_for_status()
         
         soup = BeautifulSoup(response.text, "html.parser")
@@ -134,17 +134,30 @@ def extract_og_image_with_cache(page_url, cache):
     return ""
 
 def get_feed_hash(entries):
-    """フィードエントリのハッシュを計算"""
+    """フィードエントリのハッシュを計算 - 4Gamer対応版"""
     items_for_hash = []
-    for entry in entries[:15]:  # 上位15件でハッシュ計算
+    for entry in entries[:10]:  # 上位10件でハッシュ計算
         title = entry.get('title', '').strip()
         link = entry.get('link', '').strip()
-        if '?' in link:
+        
+        # 4Gamerの場合、URLパラメータとタイムスタンプを正規化
+        if '4gamer.net' in link:
+            # URLパラメータを除去
+            if '?' in link:
+                link = link.split('?')[0]
+            # 末尾のスラッシュを統一
+            link = link.rstrip('/')
+        elif '?' in link:
             link = link.split('?')[0]
+            
         items_for_hash.append(f"{title}|{link}")
     
     hash_string = "||".join(items_for_hash)
-    return hashlib.md5(hash_string.encode('utf-8')).hexdigest()
+    hash_value = hashlib.md5(hash_string.encode('utf-8')).hexdigest()
+    
+    logging.debug(f"Hash for {len(entries)} entries: {hash_value[:8]}... (first: {entries[0].get('title', '')[:30]}...)")
+    
+    return hash_value
 
 def extract_rss_image(entry, article_url):
     """RSS内から画像を優先抽出"""
@@ -252,7 +265,7 @@ def fetch_single_rss_optimized(url, cache):
         
         # ハッシュが同じ場合は、キャッシュから既存記事を返す
         if current_hash == previous_hash:
-            logging.info(f"No updates for {site} (hash match)")
+            logging.info(f"No updates for {site} (hash match: {current_hash[:8]})")
             cached_articles = []
             for entry in feed.entries:
                 article_url = entry.get("link", "")
@@ -261,13 +274,13 @@ def fetch_single_rss_optimized(url, cache):
             return cached_articles
         
         # 新しい記事がある場合は更新処理
-        logging.info(f"Processing updates for {site}")
+        logging.info(f"Processing updates for {site} (hash: {previous_hash[:8] if previous_hash else 'none'} -> {current_hash[:8]})")
         
         items = []
         new_count = 0
-        og_fetch_count = 0
+        og_skip_count = 0
         
-        for entry in feed.entries:
+        for i, entry in enumerate(feed.entries):
             article_url = entry.get("link", "")
             if not article_url:
                 continue
@@ -275,6 +288,16 @@ def fetch_single_rss_optimized(url, cache):
             # キャッシュにない記事のみ処理
             if article_url not in cache.get("articles", {}):
                 processed_item = process_single_entry(entry, site, cache)
+                
+                # OG画像取得を大幅制限（新着記事の最初の2件のみ）
+                if not processed_item.get("has_image") and new_count < 2:
+                    og_thumb = extract_og_image_with_cache(article_url, cache)
+                    if og_thumb and '<img' not in processed_item["content"]:
+                        processed_item["content"] = f'<img src="{og_thumb}" loading="lazy" style="max-width:100%; height:auto;"><br>{processed_item["content"]}'
+                        processed_item["has_image"] = True
+                else:
+                    og_skip_count += 1
+                
                 cache.setdefault("articles", {})[article_url] = processed_item
                 new_count += 1
             
@@ -286,7 +309,7 @@ def fetch_single_rss_optimized(url, cache):
         cache.setdefault("feed_hashes", {})[url] = current_hash
         
         elapsed = time.time() - start_time
-        logging.info(f"Processed {site} in {elapsed:.2f}s - {new_count} new articles")
+        logging.info(f"Processed {site} in {elapsed:.2f}s - {new_count} new, {og_skip_count} OG skipped")
         
         return items
         
@@ -302,8 +325,8 @@ def fetch_and_generate_items():
     
     logging.info("=== RSS FEED UPDATE ===")
     
-    # 並列処理数を制限
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    # 並列処理数を削減（安定性優先）
+    with ThreadPoolExecutor(max_workers=2) as executor:
         future_to_url = {
             executor.submit(fetch_single_rss_optimized, url, cache): url 
             for url in RSS_URLS
