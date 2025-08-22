@@ -1,13 +1,10 @@
-name: Generate & Deploy RSS
+name: Generate RSS Feed
 
 on:
   schedule:
-    # 日中（6時-24時）は10分おき
-    - cron: '*/10 6-23 * * *'
-    # 深夜（1時-5時）は30分おき  
-    - cron: '*/30 1-5 * * *'
-    # 0時台は15分おき（中間設定）
-    - cron: '*/15 0 * * *'
+    - cron: '*/10 6-23 * * *' # 日中（6時-23時）10分おき（※UTC基準）
+    - cron: '*/30 1-5 * * *'  # 深夜（1時-5時）30分おき（※UTC基準）
+    - cron: '*/15 0 * * *'    # 0時台15分おき（※UTC基準）
   workflow_dispatch:
 
 permissions:
@@ -20,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -52,14 +49,13 @@ jobs:
           python rss_generator.py
           test -f public/rss_output.xml
 
-      # 生成物のハッシュを取り、前回と同一か比較
+      # 生成物のハッシュを取り、前回と比較して差分なければデプロイをスキップ
       - name: Compute RSS hash
         id: hash
         run: |
           sha256sum public/rss_output.xml | awk '{print $1}' > .rss_hash_current
 
       - name: Restore previous hash
-        id: hashrestore
         uses: actions/cache@v4
         with:
           path: .rss_hash_prev
@@ -76,12 +72,31 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
-      # 差分があるときのみ Pages 用アーティファクトをアップロード
+      # 差分があるときだけ Pages へアップロード & デプロイ
       - name: Upload artifact (if changed)
         if: steps.diff.outputs.changed == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
+
+      - name: Deploy to GitHub Pages (if changed)
+        if: steps.diff.outputs.changed == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      # ハッシュ保存（次回比較用）
+      - name: Save current hash (if changed)
+        if: steps.diff.outputs.changed == 'true'
+        uses: actions/cache@v4
+        with:
+          path: .rss_hash_current
+          key: rss-hash-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            rss-hash-
+
+      - name: Move hash to prev (if changed)
+        if: steps.diff.outputs.changed == 'true'
+        run: mv .rss_hash_current .rss_hash_prev || true
 
       # rss_cache.json を保存（更新後）
       - name: Save rss_cache.json
@@ -91,29 +106,3 @@ jobs:
           key: rss-cache-${{ github.ref_name }}-${{ github.run_id }}
           restore-keys: |
             rss-cache-
-
-      # ハッシュも保存（次回比較用）
-      - name: Save current hash
-        if: steps.diff.outputs.changed == 'true'
-        uses: actions/cache@v4
-        with:
-          path: .rss_hash_current
-          key: rss-hash-${{ github.ref_name }}-${{ github.run_id }}
-          restore-keys: |
-            rss-hash-
-
-      - name: Move hash to prev
-        if: steps.diff.outputs.changed == 'true'
-        run: mv .rss_hash_current .rss_hash_prev || true
-
-  deploy:
-    needs: build
-    if: needs.build.outputs.changed != 'false' || steps.diff.outputs.changed == 'true'
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
