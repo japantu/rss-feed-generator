@@ -1,4 +1,4 @@
-name: Update RSS Feed for GitHub Pages
+name: Generate & Deploy RSS
 
 on:
   schedule:
