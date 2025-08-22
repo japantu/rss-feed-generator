@@ -134,22 +134,37 @@ def extract_og_image_with_cache(page_url, cache):
     return ""
 
 def get_feed_hash(entries):
-    """フィードエントリのハッシュを計算 - 4Gamer対応版"""
+    """フィードエントリのハッシュを計算 - 動的要素対応版"""
     items_for_hash = []
     for entry in entries[:10]:  # 上位10件でハッシュ計算
         title = entry.get('title', '').strip()
         link = entry.get('link', '').strip()
         
-        # 4Gamerの場合、URLパラメータとタイムスタンプを正規化
-        if '4gamer.net' in link:
-            # URLパラメータを除去
-            if '?' in link:
+        # URL正規化（動的パラメータ除去）
+        if '?' in link:
+            base_url = link.split('?')[0]
+            # 必要なパラメータのみ保持（記事ID等）
+            if 'lifehacker.jp' in link:
+                # ライフハッカーの記事IDパラメータ保持
+                import re
+                article_id = re.search(r'/(\d+)', base_url)
+                link = base_url if article_id else link.split('?')[0]
+            elif '4gamer.net' in link:
+                # 4Gamerの記事番号のみ保持
+                link = base_url.rstrip('/')
+            elif 'gizmodo.jp' in link:
+                # ギズモードのスラッグのみ保持
+                link = base_url.rstrip('/')
+            else:
                 link = link.split('?')[0]
-            # 末尾のスラッシュを統一
-            link = link.rstrip('/')
-        elif '?' in link:
-            link = link.split('?')[0]
-            
+        
+        # URLの末尾統一
+        link = link.rstrip('/')
+        
+        # タイトルの正規化（余分な空白、特殊文字除去）
+        title = re.sub(r'\s+', ' ', title)
+        title = title.replace('\u3000', ' ')  # 全角スペース
+        
         items_for_hash.append(f"{title}|{link}")
     
     hash_string = "||".join(items_for_hash)
@@ -304,7 +319,7 @@ def fetch_single_rss_optimized(url, cache):
         cache.setdefault("feed_hashes", {})[url] = current_hash
         
         elapsed = time.time() - start_time
-        logging.info(f"Processed {site} in {elapsed:.2f}s - {new_count} new, {og_skip_count} OG skipped")
+        logging.info(f"Processed {site} in {elapsed:.2f}s - {new_count} new articles")
         
         return items
         
