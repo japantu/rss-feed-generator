@@ -1,465 +1,470 @@
 # -*- coding: utf-8 -*-
-import feedparser, html, re, requests
+"""
+高速版 RSS マージャー（OG画像補完を維持）
+- フィードは並列取得（max_workers=12）
+- 画像は RSS内のものを優先、無いときだけOG補完
+- OG補完は <head> だけ先に取得して最小コスト化。必要ドメインだけ200KBまで本体を読む
+- 失敗/成功を含めた結果を rss_cache.json に保存（Actions で永続化推奨）
+- 出力: public/rss_output.xml
+"""
+
+import os
+import re
+import json
+import time
+import html
+import hashlib
+import logging
+from io import StringIO
 from datetime import datetime, timezone, timedelta
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
+
+import feedparser
+import requests
 from bs4 import BeautifulSoup
 from xml.etree.ElementTree import Element, SubElement, ElementTree, register_namespace
-import logging
-import os
-import json
-import hashlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import time
+from threading import Semaphore
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-# ログ設定
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# -----------------------------
+# 設定
+# -----------------------------
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# 名前空間の登録
-register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
-register_namespace("dc", "http://purl.org/dc/elements/1.1/")
-
-# 各RSSフィードのURLリスト
+# ここに統合したいRSSを列挙（必要に応じて追加/削除してください）
 RSS_URLS = [
-    "http://himasoku.com/index.rdf",
-    "https://hamusoku.com/index.rdf",
-    "http://blog.livedoor.jp/kinisoku/index.rdf",
-    "https://www.lifehacker.jp/feed/index.xml",
-    "https://itainews.com/index.rdf",
-    "http://blog.livedoor.jp/news23vip/index.rdf",
-    "http://yaraon-blog.com/feed",
-    "http://blog.livedoor.jp/bluejay01-review/index.rdf",
+    # ニュース/テック（例）
     "https://www.4gamer.net/rss/index.xml",
     "https://www.gizmodo.jp/atom.xml",
+    "https://www.lifehacker.jp/feed/index.xml",
     "https://daily-gadget.net/feed/",
+    # ライブドア系など（例）
+    "http://blog.livedoor.jp/news23vip/index.rdf",
+    "http://blog.livedoor.jp/bluejay01-review/index.rdf",
+    "http://blog.livedoor.jp/kinisoku/index.rdf",
+    # まとめ系（例）
+    "https://itainews.com/index.rdf",
+    # はちま・やらおん等（必要なら）
+    "http://yaraon-blog.com/feed",
+    # はむ速（HTML整形対応あり）
+    "https://hamusoku.com/index.rdf",
 ]
 
-# HTTPリクエストヘッダー
+# HTTPリクエスト設定
+DEFAULT_TIMEOUT = (2, 3)  # (connect, read) 秒
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36'
+    "User-Agent": "Mozilla/5.0 (+KLWP/rss)",
+    "Accept-Language": "ja,en;q=0.8",
+}
+
+# requests.Session（接続再利用＋軽リトライ）
+SESSION = requests.Session()
+retries = Retry(
+    total=3,
+    backoff_factor=0.3,
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["GET", "HEAD"],
+)
+adapter = HTTPAdapter(max_retries=retries, pool_connections=50, pool_maxsize=50)
+SESSION.mount("http://", adapter)
+SESSION.mount("https://", adapter)
+
+# 外部サイトへの同時アクセス制御（礼儀として10本程度に制限）
+OUTBOUND_SEM = Semaphore(10)
+
+# OG補完を積極的に試すドメイン（必要に応じて追加）
+OG_POSITIVE_DOMAINS = {
+    "www.4gamer.net",
+    "www.lifehacker.jp",
+    "www.gizmodo.jp",
 }
 
 # キャッシュファイル
 CACHE_FILE = "rss_cache.json"
 
-def load_cache():
-    """キャッシュをロード"""
+# name空間の登録（dc:date / content:encoded を使うため）
+register_namespace("dc", "http://purl.org/dc/elements/1.1/")
+register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
+
+# -----------------------------
+# キャッシュ
+# -----------------------------
+def load_cache() -> dict:
     if os.path.exists(CACHE_FILE):
         try:
-            with open(CACHE_FILE, 'r', encoding='utf-8') as f:
-                cache_data = json.load(f)
-                
-            articles_count = len(cache_data.get("articles", {}))
-            og_images_count = len(cache_data.get("og_images", {}))
-            feed_hashes_count = len(cache_data.get("feed_hashes", {}))
-            
-            logging.info(f"Cache loaded: {articles_count} articles, {og_images_count} OG images, {feed_hashes_count} feed hashes")
-            return cache_data
-            
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
         except Exception as e:
             logging.warning(f"Cache load error: {e}")
-    else:
-        logging.info("No existing cache file found - starting fresh")
-        
     return {
-        "articles": {},
-        "og_images": {},
-        "feed_hashes": {}
+        "articles": {},      # URL -> 記事データ（縮約）
+        "feed_hashes": {},   # フィードURL -> entriesハッシュ
+        "og_images": {},     # 記事URL -> 画像URL（空文字 = 取れなかった）
     }
 
-def save_cache(cache_data):
-    """キャッシュを保存"""
+def save_cache(cache: dict) -> None:
     try:
-        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
-            json.dump(cache_data, f, ensure_ascii=False, indent=2)
+        with open(CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(cache, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        logging.error(f"Cache save error: {e}")
+        logging.warning(f"Cache save error: {e}")
 
-def to_utc(st):
-    """struct_timeをUTCのdatetimeオブジェクトに変換"""
-    return datetime(*st[:6], tzinfo=timezone.utc)
-
-def clean_content_text(content, site_name=""):
-    """コンテンツから不要なテキストを除去"""
+# -----------------------------
+# 文字列/HTML処理
+# -----------------------------
+def clean_content(content: str, site_name: str) -> str:
+    """よくある『続きを読む』等のノイズを除去"""
     if not content:
-        return content
-    
+        return ""
     patterns_to_remove = [
-        r'続きを読む.*$',
-        r'Read more.*$', 
-        r'もっと見る.*$',
-        r'詳しくは.*$',
-        r'full article.*$',
-        r'\[…\].*$',
-        r'\.\.\..*続き.*$',
-        r'→.*続き.*$',
-        r'>>.*続き.*$',
+        r"続きを読む.*$",
+        r"Read more.*$",
+        r"もっと見る.*$",
+        r"詳しくは.*$",
+        r"full article.*$",
+        r"\[…\].*$",
+        r"\.\.\..*続き.*$",
+        r"→.*続き.*$",
+        r">>.*続き.*$",
     ]
-    
     cleaned = content
-    for pattern in patterns_to_remove:
-        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE | re.MULTILINE)
-    
-    if 'hamusoku' in site_name.lower():
-        cleaned = re.sub(r'続きを読む.*', '', cleaned, flags=re.IGNORECASE)
-        cleaned = re.sub(r'→\s*続きを読む.*', '', cleaned, flags=re.IGNORECASE)
-        cleaned = re.sub(r'&gt;&gt;続きを読む.*', '', cleaned, flags=re.IGNORECASE)
-    
+    for pat in patterns_to_remove:
+        cleaned = re.sub(pat, "", cleaned, flags=re.IGNORECASE | re.MULTILINE)
+
+    if "hamusoku" in site_name.lower():
+        cleaned = re.sub(r"続きを読む.*", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"→\s*続きを読む.*", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"&gt;&gt;続きを読む.*", "", cleaned, flags=re.IGNORECASE)
+
     return cleaned.strip()
 
-def extract_og_image_with_cache(page_url, cache):
-    """キャッシュ機能付きOG画像抽出（超高速版）"""
-    if not page_url:
-        return ""
-    
-    # キャッシュから取得
-    if page_url in cache.get("og_images", {}):
-        return cache["og_images"][page_url]
-    
-    try:
-        response = requests.get(page_url, headers=HEADERS, timeout=2)
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.text, "html.parser")
-        og_image_tag = soup.find("meta", property="og:image")
-        if og_image_tag and og_image_tag.get("content"):
-            img_url = og_image_tag["content"]
-            result = urljoin(page_url, img_url)
-            cache.setdefault("og_images", {})[page_url] = result
-            return result
-        
-    except Exception as e:
-        logging.debug(f"OG image extraction failed for {page_url}: {e}")
-    
-    cache.setdefault("og_images", {})[page_url] = ""
-    return ""
-
-def get_feed_hash(entries):
-    """フィードエントリのハッシュを計算 - 動的要素対応版"""
-    items_for_hash = []
-    for entry in entries[:10]:  # 上位10件でハッシュ計算
-        title = entry.get('title', '').strip()
-        link = entry.get('link', '').strip()
-        
-        # URL正規化（動的パラメータ除去）
-        if '?' in link:
-            base_url = link.split('?')[0]
-            # 必要なパラメータのみ保持（記事ID等）
-            if 'lifehacker.jp' in link:
-                # ライフハッカーの記事IDパラメータ保持
-                article_id = re.search(r'/(\d+)', base_url)
-                link = base_url if article_id else link.split('?')[0]
-            elif '4gamer.net' in link:
-                # 4Gamerの記事番号のみ保持
-                link = base_url.rstrip('/')
-            elif 'gizmodo.jp' in link:
-                # ギズモードのスラッグのみ保持
-                link = base_url.rstrip('/')
-            else:
-                link = link.split('?')[0]
-        
-        # URLの末尾統一
-        link = link.rstrip('/')
-        
-        # タイトルの正規化（余分な空白、特殊文字除去）
-        title = re.sub(r'\s+', ' ', title)
-        title = title.replace('\u3000', ' ')  # 全角スペース
-        
-        items_for_hash.append(f"{title}|{link}")
-    
-    hash_string = "||".join(items_for_hash)
-    hash_value = hashlib.md5(hash_string.encode('utf-8')).hexdigest()
-    
-    logging.debug(f"Hash for {len(entries)} entries: {hash_value[:8]}... (first: {entries[0].get('title', '')[:30]}...)")
-    
-    return hash_value
-
-def extract_rss_image(entry, article_url):
-    """RSS内から画像を優先抽出"""
-    thumb = ""
-    
-    if "media_thumbnail" in entry and entry.media_thumbnail:
-        thumb = entry.media_thumbnail[0]["url"]
-    elif "media_content" in entry and entry.media_content:
-        thumb = entry.media_content[0]["url"]
-    elif "enclosures" in entry and entry.enclosures:
-        for enc in entry.enclosures:
-            if enc.get("type", "").startswith("image/") and enc.get("href"):
-                thumb = enc["href"]
-                break
-    
-    return thumb
-
-def extract_html_image(html_raw, article_url):
-    """HTML内から画像を抽出"""
+def extract_html_image(html_raw: str, article_url: str) -> str:
+    """content:encoded 等の本文HTMLから <img> を1枚抽出"""
     if not html_raw:
         return ""
-    
     try:
-        soup_desc = BeautifulSoup(html_raw, "html.parser")
-        img = soup_desc.find("img")
+        soup = BeautifulSoup(html_raw, "html.parser")
+        img = soup.find("img")
         if img and img.get("src"):
             return urljoin(article_url, img["src"])
     except Exception as e:
         logging.debug(f"HTML image extraction error: {e}")
-    
     return ""
 
-def process_single_entry(entry, site, cache):
-    """単一のエントリを処理"""
-    # 日時処理
-    dt = None
-    if entry.get("published_parsed"):
-        dt = to_utc(entry.published_parsed)
-    elif entry.get("updated_parsed"):
-        dt = to_utc(entry.updated_parsed)
-    else:
-        dt = datetime.now(timezone.utc)
+# -----------------------------
+# 画像抽出（RSS優先→OG補完）
+# -----------------------------
+def get_thumb_from_entry(entry) -> str:
+    """RSS内（thumbnail / media:content / enclosure）から画像を取る"""
+    # media_thumbnail
+    if "media_thumbnail" in entry and entry.media_thumbnail:
+        t = entry.media_thumbnail[0].get("url") or entry.media_thumbnail[0].get("href")
+        if t:
+            return t
+    # media_content
+    if "media_content" in entry and entry.media_content:
+        t = entry.media_content[0].get("url")
+        if t:
+            return t
+    # enclosure (type=image/*)
+    if "enclosures" in entry and entry.enclosures:
+        for enc in entry.enclosures:
+            if enc.get("type", "").startswith("image/") and enc.get("href"):
+                return enc["href"]
+    return ""
 
-    # コンテンツ抽出
-    html_raw = ""
-    for fld in ("content", "summary", "description"):
-        if 'content' in entry and isinstance(entry['content'], list) and entry['content']:
-            for c_item in entry['content']:
-                if c_item and isinstance(c_item, dict) and c_item.get('type') == 'html' and c_item.get('value'):
-                    html_raw = c_item['value']
+def fetch_head_html(url: str) -> str | None:
+    """ページ全文ではなく<head>終端までを最小限取得"""
+    with OUTBOUND_SEM:
+        try:
+            resp = SESSION.get(url, headers=HEADERS, timeout=DEFAULT_TIMEOUT, stream=True)
+            resp.raise_for_status()
+            chunks = []
+            for chunk in resp.iter_content(chunk_size=65536, decode_unicode=True):
+                if not chunk:
                     break
-        if not html_raw and entry.get(fld):
-            v = entry.get(fld)
-            if isinstance(v, list):
-                v = v[0].get('value', '') if v[0] and isinstance(v[0], dict) else (v[0] if v else '')
-            if isinstance(v, str):
-                html_raw = v
-                break
+                chunks.append(chunk)
+                joined = "".join(chunks)
+                if "</head>" in joined.lower():
+                    break
+            return "".join(chunks)
+        except Exception:
+            return None
 
-    article_url = entry.get("link", "")
-    
-    # 画像取得の優先順位
-    thumb = extract_rss_image(entry, article_url)
-    
+def extract_og_from_html_head(head_html: str) -> str | None:
+    """<head> から og:image / twitter:image を抽出"""
+    if not head_html:
+        return None
+    try:
+        soup = BeautifulSoup(head_html, "html.parser")
+        for attrs in (
+            {"property": "og:image"},
+            {"name": "twitter:image"},
+            {"property": "og:image:url"},
+        ):
+            tag = soup.find("meta", attrs=attrs)
+            if tag and tag.get("content"):
+                return tag["content"].strip()
+    except Exception:
+        pass
+    return None
+
+def extract_og_image_with_cache(article_url: str, cache: dict) -> str | None:
+    """キャッシュ付きOG画像抽出（必要サイトは積極、それ以外は軽く）"""
+    # キャッシュ尊重
+    og_cache = cache.setdefault("og_images", {})
+    if article_url in og_cache:
+        return og_cache[article_url] or None
+
+    host = urlparse(article_url).netloc
+    aggressive = host in OG_POSITIVE_DOMAINS
+
+    # まずは<head>だけ取得
+    head_html = fetch_head_html(article_url)
+    og = extract_og_from_html_head(head_html or "")
+
+    # 必要ドメインだけは200KBまで本文を読んで再挑戦
+    if not og and aggressive:
+        with OUTBOUND_SEM:
+            try:
+                resp = SESSION.get(article_url, headers=HEADERS, timeout=DEFAULT_TIMEOUT, stream=True)
+                resp.raise_for_status()
+                size = 0
+                chunks = []
+                for chunk in resp.iter_content(chunk_size=65536, decode_unicode=True):
+                    if not chunk:
+                        break
+                    chunks.append(chunk)
+                    size += len(chunk)
+                    if size > 200_000:  # 200KBまで
+                        break
+                html_text = "".join(chunks)
+                soup = BeautifulSoup(html_text, "html.parser")
+                # 再度抽出
+                tag = soup.find("meta", attrs={"property": "og:image"})
+                if tag and tag.get("content"):
+                    og = tag["content"].strip()
+                if not og:
+                    tag = soup.find("meta", attrs={"name": "twitter:image"})
+                    if tag and tag.get("content"):
+                        og = tag["content"].strip()
+            except Exception:
+                og = None
+
+    # キャッシュ保存（None も空文字で保存して次回スキップ）
+    og_cache[article_url] = og or ""
+    return og
+
+# -----------------------------
+# RSS処理
+# -----------------------------
+def get_feed_hash(entries) -> str:
+    """エントリ群の軽量ハッシュ（URL+更新日時ベース）"""
+    h = hashlib.sha256()
+    for e in entries:
+        link = e.get("link") or ""
+        updated = (
+            e.get("updated") or
+            e.get("published") or
+            e.get("updated_parsed") or
+            e.get("published_parsed") or ""
+        )
+        h.update((link + str(updated)).encode("utf-8", errors="ignore"))
+    return h.hexdigest()
+
+def parse_date(entry) -> datetime:
+    """entry から日時をなるべく拾って datetime（ローカルTZ） に"""
+    for key in ("published_parsed", "updated_parsed"):
+        if entry.get(key):
+            try:
+                dt = datetime(*entry[key][:6])
+                return dt
+            except Exception:
+                pass
+    for key in ("published", "updated"):
+        if entry.get(key):
+            try:
+                return datetime.fromisoformat(entry[key].replace("Z", "+00:00"))
+            except Exception:
+                pass
+    return datetime.now()
+
+def entry_to_item(entry, site: str, cache: dict) -> dict | None:
+    """feedparser の entry を内部アイテムdictへ"""
+    title = html.unescape(entry.get("title", "")).strip() or "(no title)"
+    link = entry.get("link")
+    if not link:
+        return None
+
+    # 説明と本文
+    desc = entry.get("summary", "") or entry.get("description", "") or ""
+    content_html = ""
+    if "content" in entry and entry.content:
+        # content:encoded 相当
+        content_html = entry.content[0].get("value") or ""
+    plain_description = clean_content(html.unescape(desc), site)
+    content_html = clean_content(content_html, site)
+
+    # 画像：RSS内 → 本文内 → OG補完
+    thumb = get_thumb_from_entry(entry)
     if not thumb:
-        thumb = extract_html_image(html_raw, article_url)
-    
-    # OG画像は補完として使用（RSS/HTML内に画像がない場合のみ）
-    if not thumb and article_url:
-        thumb = extract_og_image_with_cache(article_url, cache)
-    
-    # 最終コンテンツ作成
-    final_content_html = html_raw or ""
-    if thumb and '<img' not in final_content_html:
-        final_content_html = f'<img src="{thumb}" loading="lazy" style="max-width:100%; height:auto;"><br>{final_content_html}'
-    
-    # プレーンテキスト作成
-    plain_text = html.unescape(BeautifulSoup(html_raw, "html.parser").get_text(" ", strip=True)) if html_raw else ""
-    plain_description = clean_content_text(plain_text, site)
+        html_img = extract_html_image(content_html, link)
+        if html_img:
+            thumb = html_img
+    if not thumb:
+        og = extract_og_image_with_cache(link, cache)
+        if og:
+            thumb = og
+
+    # 本文に画像無い時、サムネを先頭に差す（KLWP向け）
+    final_content_html = content_html
+    if thumb and "<img" not in content_html:
+        safe = html.escape(thumb, quote=True)
+        final_content_html = f'<p><img src="{safe}" /></p>' + (content_html or "")
+
+    dt = parse_date(entry)
 
     return {
-        "title": f"{site}【{html.unescape(entry.get('title',''))}",
-        "link": article_url,
-        "pubDate": dt.isoformat(),
+        "title": title,
+        "link": link,
+        "pubDate": dt,
         "description": plain_description,
-        "content": final_content_html,
+        "content": final_content_html or plain_description,
         "site": site,
         "has_image": bool(thumb),
-        "processed_at": datetime.now().isoformat()
+        "processed_at": datetime.now().isoformat(),
     }
 
-def fetch_single_rss_optimized(url, cache):
-    """最適化された単一RSSフィード取得"""
-    start_time = time.time()
-    
+def fetch_single_rss(url: str, cache: dict) -> list[dict]:
+    """単一RSSを取得→必要に応じてOG補完"""
     try:
         feed = feedparser.parse(url, request_headers=HEADERS)
-        
         if feed.bozo and feed.bozo_exception:
             logging.warning(f"RSS parsing error for {url}: {feed.bozo_exception}")
-            # パースエラーがあっても続行
-        
-        if not hasattr(feed, 'entries') or not feed.entries:
-            logging.error(f"No entries found for {url}")
-            return []
 
         site = feed.feed.get("title", "Unknown Site")
         current_hash = get_feed_hash(feed.entries)
-        previous_hash = cache.get("feed_hashes", {}).get(url)
-        
-        # ハッシュが同じ場合は、キャッシュから既存記事を返す
-        if current_hash == previous_hash:
-            logging.info(f"No updates for {site} (hash match: {current_hash[:8]})")
-            cached_articles = []
-            for entry in feed.entries:
-                article_url = entry.get("link", "")
-                if article_url and article_url in cache.get("articles", {}):
-                    cached_articles.append(cache["articles"][article_url])
-            return cached_articles
-        
-        # 新しい記事がある場合は更新処理
-        logging.info(f"Processing updates for {site} (hash: {previous_hash[:8] if previous_hash else 'none'} -> {current_hash[:8]})")
-        
+        prev_hash = cache.get("feed_hashes", {}).get(url)
+
         items = []
-        new_count = 0
-        
-        for entry in feed.entries:
-            article_url = entry.get("link", "")
-            if not article_url:
-                continue
-            
-            try:
-                # キャッシュにない記事のみ処理
-                if article_url not in cache.get("articles", {}):
-                    processed_item = process_single_entry(entry, site, cache)
-                    cache.setdefault("articles", {})[article_url] = processed_item
-                    new_count += 1
-                
-                # キャッシュから記事を取得
-                if article_url in cache.get("articles", {}):
-                    items.append(cache["articles"][article_url])
-                    
-            except Exception as e:
-                logging.error(f"Error processing entry {article_url}: {e}")
-                continue
-        
-        # フィードハッシュ更新
-        cache.setdefault("feed_hashes", {})[url] = current_hash
-        
-        elapsed = time.time() - start_time
-        logging.info(f"Processed {site} in {elapsed:.2f}s - {new_count} new articles, {len(items)} total")
-        
+        if current_hash == prev_hash:
+            # 変更なし：キャッシュ記事を復元
+            art = cache.get("articles", {})
+            for link, a in art.items():
+                if a.get("site") == site:
+                    items.append({
+                        "title": a["title"],
+                        "link": link,
+                        "pubDate": datetime.fromisoformat(a["pubDate"]),
+                        "description": a["description"],
+                        "content": a["content"],
+                        "site": a["site"],
+                        "has_image": a["has_image"],
+                        "processed_at": a["processed_at"],
+                    })
+            logging.info(f"[cache] {site}: {len(items)} items")
+            return items
+
+        # 新規パース
+        for e in feed.entries:
+            item = entry_to_item(e, site, cache)
+            if item:
+                items.append(item)
+
+        # 新キャッシュ保存
+        cache["feed_hashes"][url] = current_hash
+        for it in items:
+            # 記事URLを key に縮約保存
+            cache["articles"][it["link"]] = {
+                "title": it["title"],
+                "pubDate": it["pubDate"].isoformat(),
+                "description": it["description"],
+                "content": it["content"],
+                "site": it["site"],
+                "has_image": it["has_image"],
+                "processed_at": it["processed_at"],
+            }
+
+        logging.info(f"[fresh] {site}: {len(items)} items")
         return items
-        
+
     except Exception as e:
-        logging.error(f"Error processing RSS feed {url}: {e}")
+        logging.error(f"Error processing RSS feed {url}: {e}", exc_info=True)
         return []
 
-def fetch_and_generate_items():
-    """最適化されたメインロジック"""
-    start_time = time.time()
+def fetch_and_generate_items() -> list[dict]:
+    """全フィードを並列取得して結合・ソート"""
     cache = load_cache()
-    all_items = []
-    
-    logging.info("=== RSS FEED UPDATE ===")
-    
-    # 並列処理数を削減（安定性優先）
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        future_to_url = {
-            executor.submit(fetch_single_rss_optimized, url, cache): url 
-            for url in RSS_URLS
-        }
-        
-        for future in as_completed(future_to_url):
-            url = future_to_url[future]
+    all_items: list[dict] = []
+
+    # 並列でRSS取得
+    with ThreadPoolExecutor(max_workers=12) as ex:
+        futmap = {ex.submit(fetch_single_rss, u, cache): u for u in RSS_URLS}
+        for fut in as_completed(futmap):
             try:
-                items = future.result()
-                all_items.extend(items)
-                logging.info(f"Added {len(items)} items from {url}")
+                all_items.extend(fut.result())
             except Exception as e:
-                logging.error(f"Failed to process {url}: {e}")
-    
-    # 古いキャッシュ記事を削除（7日以上前）
-    cutoff_date = datetime.now() - timedelta(days=7)
-    articles_to_remove = []
-    for url, article in cache.get("articles", {}).items():
+                logging.error(f"Worker error: {e}")
+
+    # 古いキャッシュ（30日より前の記事）は掃除
+    cutoff = datetime.now() - timedelta(days=30)
+    to_del = []
+    for link, a in list(cache.get("articles", {}).items()):
         try:
-            processed_at = datetime.fromisoformat(article.get("processed_at", ""))
-            if processed_at < cutoff_date:
-                articles_to_remove.append(url)
-        except:
-            pass
-    
-    for url in articles_to_remove:
-        cache["articles"].pop(url, None)
-    
-    if articles_to_remove:
-        logging.info(f"Cleaned up {len(articles_to_remove)} old cached articles (7+ days)")
-    
+            ts = datetime.fromisoformat(a.get("pubDate"))
+            if ts < cutoff:
+                to_del.append(link)
+        except Exception:
+            to_del.append(link)
+    for link in to_del:
+        cache["articles"].pop(link, None)
+
     # キャッシュ保存
     save_cache(cache)
-    
-    # 日時でソート
-    for item in all_items:
-        if isinstance(item["pubDate"], str):
-            try:
-                item["pubDate"] = datetime.fromisoformat(item["pubDate"].replace('Z', '+00:00'))
-            except:
-                item["pubDate"] = datetime.now(timezone.utc)
-    
+
+    # 新しい順にソートして200件まで
     all_items.sort(key=lambda x: x["pubDate"], reverse=True)
-    
-    elapsed = time.time() - start_time
-    total_with_images = sum(1 for item in all_items if item.get("has_image"))
-    logging.info(f"Update completed in {elapsed:.2f}s - {len(all_items)} articles, {total_with_images} with images")
-    
     return all_items[:200]
 
-def generate_rss_xml_string(items, base_url=""):
-    """記事アイテムリストからRSS XML文字列を生成"""
-    rss_attribs = {"version": "2.0"}
-    rss = Element("rss", attrib=rss_attribs)
-
+# -----------------------------
+# RSS出力
+# -----------------------------
+def generate_rss_xml_string(items: list[dict], base_url: str = "") -> str:
+    rss = Element("rss", attrib={"version": "2.0"})
     ch = SubElement(rss, "channel")
     SubElement(ch, "title").text = "Merged RSS Feed"
     SubElement(ch, "link").text = base_url
-    SubElement(ch, "description").text = "複数のRSSフィードを統合"
+    SubElement(ch, "description").text = "複数RSSを統合（OG補完・キャッシュ・並列最適化対応）"
     SubElement(ch, "lastBuildDate").text = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
 
     for it in items:
-        try:
-            i = SubElement(ch, "item")
-            SubElement(i, "title").text = it["title"]
-            SubElement(i, "link").text = it["link"]
-            SubElement(i, "description").text = it["description"]
-            SubElement(i, "source").text = it["site"]
-            SubElement(i, "pubDate").text = it["pubDate"].astimezone(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
-            SubElement(i, "{http://purl.org/dc/elements/1.1/}date").text = it["pubDate"].astimezone().isoformat()
-            SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
-        except Exception as e:
-            logging.error(f"Error adding item to XML: {e}")
-            continue
+        i = SubElement(ch, "item")
+        SubElement(i, "title").text = it["title"]
+        SubElement(i, "link").text = it["link"]
+        SubElement(i, "description").text = it["description"] or ""
+        SubElement(i, "source").text = it["site"]
+        SubElement(i, "{http://purl.org/dc/elements/1.1/}date").text = it["pubDate"].astimezone().isoformat()
+        SubElement(i, "pubDate").text = it["pubDate"].astimezone(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
+        SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"] or it["description"]
 
-    from io import StringIO
-    f = StringIO()
-    ElementTree(rss).write(f, encoding="unicode", xml_declaration=True)
-    return f.getvalue()
+    s = StringIO()
+    ElementTree(rss).write(s, encoding="unicode", xml_declaration=True)
+    return s.getvalue()
 
+# -----------------------------
+# main
+# -----------------------------
 if __name__ == "__main__":
-    import sys
-    
-    logging.info("Starting optimized RSS feed generation...")
-    
-    # GitHub PagesのベースURL
-    base_url = "https://japantu.github.io/rss-feed-generator/"
-
-    # 強制キャッシュクリアオプション
-    force_clear_cache = "--clear-cache" in sys.argv
-    
-    if force_clear_cache:
-        logging.info("Force clearing cache...")
-        if os.path.exists(CACHE_FILE):
-            os.remove(CACHE_FILE)
-            logging.info("Cache file deleted")
-
+    base_url = "https://<YOUR_PAGES_USERNAME>.github.io/<YOUR_REPO>/"  # 任意
     items = fetch_and_generate_items()
-    
-    if not items:
-        logging.warning("No items generated - creating empty RSS feed")
-        items = []
-    
     xml_string = generate_rss_xml_string(items, base_url=base_url)
-    
-    output_dir = "public" 
-    os.makedirs(output_dir, exist_ok=True)
-    
-    output_filepath = os.path.join(output_dir, "rss_output.xml")
-    with open(output_filepath, "w", encoding="utf-8") as f:
+
+    outdir = "public"
+    os.makedirs(outdir, exist_ok=True)
+    outpath = os.path.join(outdir, "rss_output.xml")
+    with open(outpath, "w", encoding="utf-8") as f:
         f.write(xml_string)
-    
-    logging.info(f"RSS feed generated with {len(items)} articles")
-    if items:
-        latest_date = items[0]["pubDate"]
-        if isinstance(latest_date, str):
-            try:
-                latest_date = datetime.fromisoformat(latest_date.replace('Z', '+00:00'))
-            except:
-                latest_date = datetime.now(timezone.utc)
-        logging.info(f"Latest article date: {latest_date.strftime('%Y-%m-%d %H:%M:%S')}")
-    
-    logging.info(f"RSS feed successfully generated and saved to {output_filepath}")
+
+    logging.info(f"RSS feed successfully generated: {outpath}")
