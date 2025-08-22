@@ -239,7 +239,7 @@ def process_single_entry(entry, site, cache):
     plain_description = clean_content_text(plain_text, site)
 
     return {
-        "title": f"{site}】{html.unescape(entry.get('title',''))}",
+        "title": f"{site}閂{html.unescape(entry.get('title',''))}",
         "link": article_url,
         "pubDate": dt.isoformat(),
         "description": plain_description,
@@ -288,15 +288,10 @@ def fetch_single_rss_optimized(url, cache):
             # キャッシュにない記事のみ処理
             if article_url not in cache.get("articles", {}):
                 processed_item = process_single_entry(entry, site, cache)
-                
-                # OG画像取得を大幅制限（新着記事の最初の2件のみ）
-                if not processed_item.get("has_image") and new_count < 2:
-                    og_thumb = extract_og_image_with_cache(article_url, cache)
-                    if og_thumb and '<img' not in processed_item["content"]:
-                        processed_item["content"] = f'<img src="{og_thumb}" loading="lazy" style="max-width:100%; height:auto;"><br>{processed_item["content"]}'
-                        processed_item["has_image"] = True
-                else:
-                    og_skip_count += 1
+                cache.setdefault("articles", {})[article_url] = processed_item
+                new_count += 1
+            else:
+                og_skip_count += 1
                 
                 cache.setdefault("articles", {})[article_url] = processed_item
                 new_count += 1
