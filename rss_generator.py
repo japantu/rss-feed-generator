@@ -116,7 +116,7 @@ def extract_og_image_with_cache(page_url, cache):
         return cache["og_images"][page_url]
     
     try:
-        response = requests.get(page_url, headers=HEADERS, timeout=2)  # 3秒→2秒
+        response = requests.get(page_url, headers=HEADERS, timeout=2)
         response.raise_for_status()
         
         soup = BeautifulSoup(response.text, "html.parser")
@@ -146,7 +146,6 @@ def get_feed_hash(entries):
             # 必要なパラメータのみ保持（記事ID等）
             if 'lifehacker.jp' in link:
                 # ライフハッカーの記事IDパラメータ保持
-                import re
                 article_id = re.search(r'/(\d+)', base_url)
                 link = base_url if article_id else link.split('?')[0]
             elif '4gamer.net' in link:
@@ -254,7 +253,7 @@ def process_single_entry(entry, site, cache):
     plain_description = clean_content_text(plain_text, site)
 
     return {
-        "title": f"{site}閂{html.unescape(entry.get('title',''))}",
+        "title": f"{site}【{html.unescape(entry.get('title',''))}",
         "link": article_url,
         "pubDate": dt.isoformat(),
         "description": plain_description,
@@ -273,6 +272,11 @@ def fetch_single_rss_optimized(url, cache):
         
         if feed.bozo and feed.bozo_exception:
             logging.warning(f"RSS parsing error for {url}: {feed.bozo_exception}")
+            # パースエラーがあっても続行
+        
+        if not hasattr(feed, 'entries') or not feed.entries:
+            logging.error(f"No entries found for {url}")
+            return []
 
         site = feed.feed.get("title", "Unknown Site")
         current_hash = get_feed_hash(feed.entries)
@@ -293,33 +297,32 @@ def fetch_single_rss_optimized(url, cache):
         
         items = []
         new_count = 0
-        og_skip_count = 0
         
-        for i, entry in enumerate(feed.entries):
+        for entry in feed.entries:
             article_url = entry.get("link", "")
             if not article_url:
                 continue
             
-            # キャッシュにない記事のみ処理
-            if article_url not in cache.get("articles", {}):
-                processed_item = process_single_entry(entry, site, cache)
-                cache.setdefault("articles", {})[article_url] = processed_item
-                new_count += 1
-            else:
-                og_skip_count += 1
+            try:
+                # キャッシュにない記事のみ処理
+                if article_url not in cache.get("articles", {}):
+                    processed_item = process_single_entry(entry, site, cache)
+                    cache.setdefault("articles", {})[article_url] = processed_item
+                    new_count += 1
                 
-                cache.setdefault("articles", {})[article_url] = processed_item
-                new_count += 1
-            
-            # キャッシュから記事を取得
-            if article_url in cache.get("articles", {}):
-                items.append(cache["articles"][article_url])
+                # キャッシュから記事を取得
+                if article_url in cache.get("articles", {}):
+                    items.append(cache["articles"][article_url])
+                    
+            except Exception as e:
+                logging.error(f"Error processing entry {article_url}: {e}")
+                continue
         
         # フィードハッシュ更新
         cache.setdefault("feed_hashes", {})[url] = current_hash
         
         elapsed = time.time() - start_time
-        logging.info(f"Processed {site} in {elapsed:.2f}s - {new_count} new articles")
+        logging.info(f"Processed {site} in {elapsed:.2f}s - {new_count} new articles, {len(items)} total")
         
         return items
         
@@ -336,7 +339,7 @@ def fetch_and_generate_items():
     logging.info("=== RSS FEED UPDATE ===")
     
     # 並列処理数を削減（安定性優先）
-    with ThreadPoolExecutor(max_workers=2) as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:
         future_to_url = {
             executor.submit(fetch_single_rss_optimized, url, cache): url 
             for url in RSS_URLS
@@ -347,6 +350,7 @@ def fetch_and_generate_items():
             try:
                 items = future.result()
                 all_items.extend(items)
+                logging.info(f"Added {len(items)} items from {url}")
             except Exception as e:
                 logging.error(f"Failed to process {url}: {e}")
     
@@ -373,7 +377,10 @@ def fetch_and_generate_items():
     # 日時でソート
     for item in all_items:
         if isinstance(item["pubDate"], str):
-            item["pubDate"] = datetime.fromisoformat(item["pubDate"].replace('Z', '+00:00'))
+            try:
+                item["pubDate"] = datetime.fromisoformat(item["pubDate"].replace('Z', '+00:00'))
+            except:
+                item["pubDate"] = datetime.now(timezone.utc)
     
     all_items.sort(key=lambda x: x["pubDate"], reverse=True)
     
@@ -395,14 +402,18 @@ def generate_rss_xml_string(items, base_url=""):
     SubElement(ch, "lastBuildDate").text = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
 
     for it in items:
-        i = SubElement(ch, "item")
-        SubElement(i, "title").text = it["title"]
-        SubElement(i, "link").text = it["link"]
-        SubElement(i, "description").text = it["description"]
-        SubElement(i, "source").text = it["site"]
-        SubElement(i, "pubDate").text = it["pubDate"].astimezone(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
-        SubElement(i, "{http://purl.org/dc/elements/1.1/}date").text = it["pubDate"].astimezone().isoformat()
-        SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
+        try:
+            i = SubElement(ch, "item")
+            SubElement(i, "title").text = it["title"]
+            SubElement(i, "link").text = it["link"]
+            SubElement(i, "description").text = it["description"]
+            SubElement(i, "source").text = it["site"]
+            SubElement(i, "pubDate").text = it["pubDate"].astimezone(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
+            SubElement(i, "{http://purl.org/dc/elements/1.1/}date").text = it["pubDate"].astimezone().isoformat()
+            SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"]
+        except Exception as e:
+            logging.error(f"Error adding item to XML: {e}")
+            continue
 
     from io import StringIO
     f = StringIO()
@@ -427,6 +438,11 @@ if __name__ == "__main__":
             logging.info("Cache file deleted")
 
     items = fetch_and_generate_items()
+    
+    if not items:
+        logging.warning("No items generated - creating empty RSS feed")
+        items = []
+    
     xml_string = generate_rss_xml_string(items, base_url=base_url)
     
     output_dir = "public" 
@@ -440,7 +456,10 @@ if __name__ == "__main__":
     if items:
         latest_date = items[0]["pubDate"]
         if isinstance(latest_date, str):
-            latest_date = datetime.fromisoformat(latest_date.replace('Z', '+00:00'))
+            try:
+                latest_date = datetime.fromisoformat(latest_date.replace('Z', '+00:00'))
+            except:
+                latest_date = datetime.now(timezone.utc)
         logging.info(f"Latest article date: {latest_date.strftime('%Y-%m-%d %H:%M:%S')}")
     
     logging.info(f"RSS feed successfully generated and saved to {output_filepath}")
