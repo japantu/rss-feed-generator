@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-高速版 RSS マージャー（OG画像補完を維持）
+高速版 RSS マージャー（OG画像補完維持／タイトルは「サイト名」閂「記事タイトル」）
 - フィードは並列取得（max_workers=12）
 - 画像は RSS内のものを優先、無いときだけOG補完
 - OG補完は <head> だけ先に取得して最小コスト化。必要ドメインだけ200KBまで本体を読む
@@ -404,7 +404,9 @@ def generate_rss_xml_string(items: list[dict], base_url: str = "") -> str:
 
     for it in items:
         i = SubElement(ch, "item")
-        SubElement(i, "title").text = it["title"]
+        # ★ここを復元：タイトルは「サイト名」閂「記事タイトル」
+        composed_title = f'{it["site"]}閂{it["title"]}'
+        SubElement(i, "title").text = composed_title
         SubElement(i, "link").text = it["link"]
         SubElement(i, "description").text = it["description"] or ""
         SubElement(i, "source").text = it["site"]
