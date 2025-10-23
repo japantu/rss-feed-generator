@@ -2,13 +2,14 @@ name: Generate RSS Feed
 
 on:
   schedule:
-    - cron: '*/10 6-23 * * *' # 日中（6時-23時）10分おき（※UTC基準）
-    - cron: '*/30 1-5 * * *'  # 深夜（1時-5時）30分おき（※UTC基準）
-    - cron: '*/15 0 * * *'    # 0時台15分おき（※UTC基準）
+    - cron: '*/10 6-23 * * *' # 日中10分おき（UTC）
+    - cron: '*/30 1-5 * * *'  # 深夜30分おき（UTC）
+    - cron: '*/15 0 * * *'    # 0時台15分おき（UTC）
   workflow_dispatch:
 
 permissions:
-  contents: read
+  # ⭐ keepalive のため write に変更（必須）
+  contents: write
   pages: write
   id-token: write
 
@@ -22,6 +23,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # push するので資格情報を残す
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,7 +39,7 @@ jobs:
           python -V
           pip install -r requirements.txt
 
-      # rss_cache.json を永続化（復元）
+      # rss_cache.json を永続化（必要なら）
       - name: Restore rss_cache.json
         uses: actions/cache@v4
         with:
@@ -49,7 +53,6 @@ jobs:
           python rss_generator.py
           test -f public/rss_output.xml
 
-      # 生成物のハッシュを取り、前回と比較して差分なければデプロイをスキップ
       - name: Compute RSS hash
         id: hash
         run: |
@@ -98,7 +101,6 @@ jobs:
         if: steps.diff.outputs.changed == 'true'
         run: mv .rss_hash_current .rss_hash_prev || true
 
-      # rss_cache.json を保存（更新後）
       - name: Save rss_cache.json
         uses: actions/cache@v4
         with:
@@ -106,3 +108,18 @@ jobs:
           key: rss-cache-${{ github.ref_name }}-${{ github.run_id }}
           restore-keys: |
             rss-cache-
+
+      # ⭐ ここが keepalive（1日1回だけコミット）
+      - name: Keep repository active (commit once per day)
+        run: |
+          set -e
+          TODAY=$(date -u +%Y-%m-%d)
+          echo "$TODAY" > .keepalive
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # 同日の再実行では diff なし → コミット/プッシュしない
+          if ! git diff --quiet -- .keepalive; then
+            git add .keepalive
+            git commit -m "chore: keepalive $TODAY"
+            git push
+          fi
