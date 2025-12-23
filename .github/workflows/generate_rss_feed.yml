@@ -8,7 +8,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  # ⭐ keepalive のため write に変更（必須）
   contents: write
   pages: write
   id-token: write
@@ -24,7 +23,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # push するので資格情報を残す
           persist-credentials: true
 
       - name: Set up Python
@@ -39,7 +37,6 @@ jobs:
           python -V
           pip install -r requirements.txt
 
-      # rss_cache.json を永続化（必要なら）
       - name: Restore rss_cache.json
         uses: actions/cache@v4
         with:
@@ -75,7 +72,6 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
-      # 差分があるときだけ Pages へアップロード & デプロイ
       - name: Upload artifact (if changed)
         if: steps.diff.outputs.changed == 'true'
         uses: actions/upload-pages-artifact@v3
@@ -87,15 +83,12 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      # ハッシュ保存（次回比較用）
       - name: Save current hash (if changed)
         if: steps.diff.outputs.changed == 'true'
         uses: actions/cache@v4
         with:
           path: .rss_hash_current
           key: rss-hash-${{ github.ref_name }}-${{ github.run_id }}
-          restore-keys: |
-            rss-hash-
 
       - name: Move hash to prev (if changed)
         if: steps.diff.outputs.changed == 'true'
@@ -106,20 +99,32 @@ jobs:
         with:
           path: rss_cache.json
           key: rss-cache-${{ github.ref_name }}-${{ github.run_id }}
-          restore-keys: |
-            rss-cache-
 
-      # ⭐ ここが keepalive（1日1回だけコミット）
-      - name: Keep repository active (commit once per day)
+      # ⭐ 重要：毎回必ずコミットする（同日判定を削除）
+      - name: Keep repository active (force commit every run)
         run: |
           set -e
-          TODAY=$(date -u +%Y-%m-%d)
-          echo "$TODAY" > .keepalive
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # 同日の再実行では diff なし → コミット/プッシュしない
-          if ! git diff --quiet -- .keepalive; then
-            git add .keepalive
-            git commit -m "chore: keepalive $TODAY"
-            git push
-          fi
+          
+          # タイムスタンプを秒単位で記録（毎回必ず変わる）
+          date -u +"%Y-%m-%d %H:%M:%S" > .keepalive
+          
+          git add .keepalive
+          
+          # 必ずコミット（差分チェックなし）
+          git commit -m "chore: keepalive $(date -u +%Y-%m-%d)" || true
+          
+          # プッシュ（リトライ付き）
+          for i in {1..5}; do
+            if git push origin HEAD:${GITHUB_REF#refs/heads/}; then
+              echo "✓ Keepalive pushed successfully"
+              exit 0
+            fi
+            echo "Push attempt $i failed, retrying..."
+            git pull --rebase origin ${GITHUB_REF#refs/heads/}
+            sleep $((i * 2))
+          done
+          
+          echo "⚠ Warning: Failed to push keepalive after 5 attempts"
+          exit 1
