@@ -44,7 +44,7 @@ RSS_URLS = [
     "http://blog.livedoor.jp/kinisoku/index.rdf",
     "https://itainews.com/index.rdf",
     "http://yaraon-blog.com/feed",
-    "https://rabitsokuhou.2chblog.jp/index.rdf"
+    "https://rabitsokuhou.2chblog.jp/index.rdf",
     "https://hamusoku.com/index.rdf",
 ]
 
@@ -484,3 +484,4 @@ if __name__ == "__main__":
     write_tasker_json(items, outdir=outdir, max_items=130)
 
     logging.info(f"RSS feed successfully generated: {outpath}")
+
