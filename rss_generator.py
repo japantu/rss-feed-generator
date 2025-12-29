@@ -6,6 +6,7 @@
 - OG補完は <head> だけ先に取得して最小コスト化。必要ドメインだけ200KBまで本体を読む
 - 失敗/成功を含めた結果を rss_cache.json に保存（Actions で永続化推奨）
 - 出力: public/rss_output.xml
+- 追加出力: public/feed.json, public/images.json（Tasker向け）
 """
 
 import os
@@ -14,16 +15,16 @@ import json
 import html
 import hashlib
 import logging
-from io import StringIO
-from datetime import datetime, timezone, timedelta
-from urllib.parse import urljoin, urlparse
-
-import feedparser
-import requests
-from bs4 import BeautifulSoup
-from xml.etree.ElementTree import Element, SubElement, ElementTree, register_namespace
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Semaphore
+from datetime import datetime, timezone, timedelta
+from io import StringIO
+from urllib.parse import urlparse
+
+import requests
+import feedparser
+from bs4 import BeautifulSoup
+
+from xml.etree.ElementTree import Element, SubElement, ElementTree, register_namespace
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -43,6 +44,7 @@ RSS_URLS = [
     "http://blog.livedoor.jp/kinisoku/index.rdf",
     "https://itainews.com/index.rdf",
     "http://yaraon-blog.com/feed",
+    "https://rabitsokuhou.2chblog.jp/index.rdf"
     "https://hamusoku.com/index.rdf",
 ]
 
@@ -56,17 +58,14 @@ HEADERS = {
 # requests.Session（接続再利用＋軽リトライ）
 SESSION = requests.Session()
 retries = Retry(
-    total=3,
+    total=2,
     backoff_factor=0.3,
-    status_forcelist=[429, 500, 502, 503, 504],
-    allowed_methods=["GET", "HEAD"],
+    status_forcelist=(429, 500, 502, 503, 504),
+    allowed_methods=frozenset(["GET", "HEAD"]),
 )
 adapter = HTTPAdapter(max_retries=retries, pool_connections=50, pool_maxsize=50)
 SESSION.mount("http://", adapter)
 SESSION.mount("https://", adapter)
-
-# 外部サイトへの同時アクセス制御（礼儀として10本程度に制限）
-OUTBOUND_SEM = Semaphore(10)
 
 # OG補完を積極的に試すドメイン（必要に応じて追加）
 OG_POSITIVE_DOMAINS = {
@@ -82,317 +81,316 @@ CACHE_FILE = "rss_cache.json"
 register_namespace("dc", "http://purl.org/dc/elements/1.1/")
 register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
 
+
 # -----------------------------
-# キャッシュ
+# 便利関数
 # -----------------------------
+def safe_text(s: str) -> str:
+    if s is None:
+        return ""
+    # HTMLエンティティを復元
+    s = html.unescape(str(s))
+    # 変な制御文字を除去
+    s = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", s)
+    return s.strip()
+
+
+def norm_url(u: str) -> str:
+    if not u:
+        return ""
+    return u.strip()
+
+
+def domain_of(url: str) -> str:
+    try:
+        return urlparse(url).netloc
+    except Exception:
+        return ""
+
+
+def sha1(s: str) -> str:
+    return hashlib.sha1(s.encode("utf-8", errors="ignore")).hexdigest()
+
+
 def load_cache() -> dict:
     if os.path.exists(CACHE_FILE):
         try:
             with open(CACHE_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except Exception as e:
-            logging.warning(f"Cache load error: {e}")
-    return {
-        "articles": {},      # URL -> 記事データ
-        "feed_hashes": {},   # フィードURL -> entriesハッシュ
-        "og_images": {},     # 記事URL -> 画像URL（空文字 = 取れなかった）
-    }
+        except Exception:
+            return {}
+    return {}
 
-def save_cache(cache: dict) -> None:
+
+def save_cache(cache: dict):
     try:
         with open(CACHE_FILE, "w", encoding="utf-8") as f:
             json.dump(cache, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        logging.warning(f"Cache save error: {e}")
+        logging.warning(f"Failed to save cache: {e}")
 
-# -----------------------------
-# 文字列/HTML処理
-# -----------------------------
-def clean_content(content: str, site_name: str) -> str:
-    if not content:
-        return ""
-    patterns_to_remove = [
-        r"続きを読む.*$",
-        r"Read more.*$",
-        r"もっと見る.*$",
-        r"詳しくは.*$",
-        r"full article.*$",
-        r"\[…\].*$",
-        r"\.\.\..*続き.*$",
-        r"→.*続き.*$",
-        r">>.*続き.*$",
-    ]
-    cleaned = content
-    for pat in patterns_to_remove:
-        cleaned = re.sub(pat, "", cleaned, flags=re.IGNORECASE | re.MULTILINE)
 
-    if "hamusoku" in site_name.lower():
-        cleaned = re.sub(r"続きを読む.*", "", cleaned, flags=re.IGNORECASE)
-        cleaned = re.sub(r"→\s*続きを読む.*", "", cleaned, flags=re.IGNORECASE)
-        cleaned = re.sub(r"&gt;&gt;続きを読む.*", "", cleaned, flags=re.IGNORECASE)
+def http_get(url: str, timeout=DEFAULT_TIMEOUT, headers=None, stream=False):
+    h = HEADERS.copy()
+    if headers:
+        h.update(headers)
+    return SESSION.get(url, headers=h, timeout=timeout, stream=stream)
 
-    return cleaned.strip()
 
-def extract_html_image(html_raw: str, article_url: str) -> str:
-    if not html_raw:
-        return ""
-    try:
-        soup = BeautifulSoup(html_raw, "html.parser")
-        img = soup.find("img")
-        if img and img.get("src"):
-            return urljoin(article_url, img["src"])
-    except Exception:
-        pass
-    return ""
+def http_head(url: str, timeout=DEFAULT_TIMEOUT, headers=None):
+    h = HEADERS.copy()
+    if headers:
+        h.update(headers)
+    return SESSION.head(url, headers=h, timeout=timeout, allow_redirects=True)
 
-# -----------------------------
-# 画像抽出（RSS優先→OG補完）
-# -----------------------------
-def get_thumb_from_entry(entry) -> str:
-    if "media_thumbnail" in entry and entry.media_thumbnail:
-        t = entry.media_thumbnail[0].get("url") or entry.media_thumbnail[0].get("href")
-        if t:
-            return t
-    if "media_content" in entry and entry.media_content:
-        t = entry.media_content[0].get("url")
-        if t:
-            return t
-    if "enclosures" in entry and entry.enclosures:
-        for enc in entry.enclosures:
-            if enc.get("type", "").startswith("image/") and enc.get("href"):
-                return enc["href"]
-    return ""
-
-def fetch_head_html(url: str) -> str | None:
-    with OUTBOUND_SEM:
-        try:
-            resp = SESSION.get(url, headers=HEADERS, timeout=DEFAULT_TIMEOUT, stream=True)
-            resp.raise_for_status()
-            chunks = []
-            for chunk in resp.iter_content(chunk_size=65536, decode_unicode=True):
-                if not chunk:
-                    break
-                chunks.append(chunk)
-                joined = "".join(chunks)
-                if "</head>" in joined.lower():
-                    break
-            return "".join(chunks)
-        except Exception:
-            return None
-
-def extract_og_from_html_head(head_html: str) -> str | None:
-    if not head_html:
-        return None
-    try:
-        soup = BeautifulSoup(head_html, "html.parser")
-        for attrs in (
-            {"property": "og:image"},
-            {"name": "twitter:image"},
-            {"property": "og:image:url"},
-        ):
-            tag = soup.find("meta", attrs=attrs)
-            if tag and tag.get("content"):
-                return tag["content"].strip()
-    except Exception:
-        pass
-    return None
-
-def extract_og_image_with_cache(article_url: str, cache: dict) -> str | None:
-    og_cache = cache.setdefault("og_images", {})
-    if article_url in og_cache:
-        return og_cache[article_url] or None
-
-    host = urlparse(article_url).netloc
-    aggressive = host in OG_POSITIVE_DOMAINS
-
-    head_html = fetch_head_html(article_url)
-    og = extract_og_from_html_head(head_html or "")
-
-    if not og and aggressive:
-        with OUTBOUND_SEM:
-            try:
-                resp = SESSION.get(article_url, headers=HEADERS, timeout=DEFAULT_TIMEOUT, stream=True)
-                resp.raise_for_status()
-                size = 0
-                chunks = []
-                for chunk in resp.iter_content(chunk_size=65536, decode_unicode=True):
-                    if not chunk:
-                        break
-                    chunks.append(chunk)
-                    size += len(chunk)
-                    if size > 200_000:
-                        break
-                html_text = "".join(chunks)
-                soup = BeautifulSoup(html_text, "html.parser")
-                tag = soup.find("meta", attrs={"property": "og:image"})
-                if tag and tag.get("content"):
-                    og = tag["content"].strip()
-                if not og:
-                    tag = soup.find("meta", attrs={"name": "twitter:image"})
-                    if tag and tag.get("content"):
-                        og = tag["content"].strip()
-            except Exception:
-                og = None
-
-    og_cache[article_url] = og or ""
-    return og
-
-# -----------------------------
-# RSS処理
-# -----------------------------
-def get_feed_hash(entries) -> str:
-    h = hashlib.sha256()
-    for e in entries:
-        link = e.get("link") or ""
-        updated = (
-            e.get("updated") or
-            e.get("published") or
-            e.get("updated_parsed") or
-            e.get("published_parsed") or ""
-        )
-        h.update((link + str(updated)).encode("utf-8", errors="ignore"))
-    return h.hexdigest()
 
 def parse_date(entry) -> datetime:
+    # feedparserが提供するpublished_parsed/updated_parsedを優先
+    # 無い場合は現在時刻
+    dt = None
     for key in ("published_parsed", "updated_parsed"):
-        if entry.get(key):
+        if key in entry and entry.get(key):
             try:
-                dt = datetime(*entry[key][:6])
-                return dt
+                dt = datetime.fromtimestamp(
+                    datetime(*entry[key][:6], tzinfo=timezone.utc).timestamp(), tz=timezone.utc
+                )
+                break
             except Exception:
                 pass
-    for key in ("published", "updated"):
-        if entry.get(key):
-            try:
-                return datetime.fromisoformat(entry[key].replace("Z", "+00:00"))
-            except Exception:
-                pass
-    return datetime.now()
+    if not dt:
+        dt = datetime.now(timezone.utc)
+    return dt
 
-def entry_to_item(entry, site: str, cache: dict) -> dict | None:
-    title = html.unescape(entry.get("title", "")).strip() or "(no title)"
-    link = entry.get("link")
-    if not link:
-        return None
 
-    desc = entry.get("summary", "") or entry.get("description", "") or ""
-    content_html = ""
-    if "content" in entry and entry.content:
-        content_html = entry.content[0].get("value") or ""
-    plain_description = clean_content(html.unescape(desc), site)
-    content_html = clean_content(content_html, site)
-
-    thumb = get_thumb_from_entry(entry)
-    if not thumb:
-        html_img = extract_html_image(content_html, link)
-        if html_img:
-            thumb = html_img
-    if not thumb:
-        og = extract_og_image_with_cache(link, cache)
-        if og:
-            thumb = og
-
-    final_content_html = content_html
-    if thumb and "<img" not in content_html:
-        safe = html.escape(thumb, quote=True)
-        final_content_html = f'<p><img src="{safe}" /></p>' + (content_html or "")
-
-    dt = parse_date(entry)
-
-    return {
-        "title": title,
-        "link": link,
-        "pubDate": dt,
-        "description": plain_description,
-        "content": final_content_html or plain_description,
-        "site": site,
-        "has_image": bool(thumb),
-        "processed_at": datetime.now().isoformat(),
-    }
-
-def fetch_single_rss(url: str, cache: dict) -> list[dict]:
+def extract_image_from_entry(entry) -> str:
+    # RSSのenclosure / media:content / media_thumbnail / links等から画像URLを拾う
     try:
-        feed = feedparser.parse(url, request_headers=HEADERS)
-        if feed.bozo and feed.bozo_exception:
-            logging.warning(f"RSS parsing error for {url}: {feed.bozo_exception}")
+        # media_content
+        if "media_content" in entry and entry.media_content:
+            for mc in entry.media_content:
+                u = mc.get("url") or ""
+                if u and re.search(r"\.(jpg|jpeg|png|webp|gif)(\?.*)?$", u, re.I):
+                    return u
 
-        site = feed.feed.get("title", "Unknown Site")
-        current_hash = get_feed_hash(feed.entries)
-        prev_hash = cache.get("feed_hashes", {}).get(url)
+        # media_thumbnail
+        if "media_thumbnail" in entry and entry.media_thumbnail:
+            for mt in entry.media_thumbnail:
+                u = mt.get("url") or ""
+                if u and re.search(r"\.(jpg|jpeg|png|webp|gif)(\?.*)?$", u, re.I):
+                    return u
 
-        items = []
-        if current_hash == prev_hash:
-            art = cache.get("articles", {})
-            for link, a in art.items():
-                if a.get("site") == site:
-                    items.append({
-                        "title": a["title"],
-                        "link": link,
-                        "pubDate": datetime.fromisoformat(a["pubDate"]),
-                        "description": a["description"],
-                        "content": a["content"],
-                        "site": a["site"],
-                        "has_image": a["has_image"],
-                        "processed_at": a["processed_at"],
-                    })
-            logging.info(f"[cache] {site}: {len(items)} items")
-            return items
+        # links（rel=enclosure等）
+        if "links" in entry and entry.links:
+            for lk in entry.links:
+                href = lk.get("href") or ""
+                rel = (lk.get("rel") or "").lower()
+                typ = (lk.get("type") or "").lower()
+                if rel in ("enclosure", "related") or "image" in typ:
+                    if href and re.search(r"\.(jpg|jpeg|png|webp|gif)(\?.*)?$", href, re.I):
+                        return href
 
-        for e in feed.entries:
-            item = entry_to_item(e, site, cache)
-            if item:
-                items.append(item)
+        # summary/description内のimgタグ
+        summary = entry.get("summary") or entry.get("description") or ""
+        if summary:
+            m = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', summary, re.I)
+            if m:
+                return m.group(1)
+    except Exception:
+        pass
+    return ""
 
-        cache["feed_hashes"][url] = current_hash
-        for it in items:
-            cache["articles"][it["link"]] = {
-                "title": it["title"],
-                "pubDate": it["pubDate"].isoformat(),
-                "description": it["description"],
-                "content": it["content"],
-                "site": it["site"],
-                "has_image": it["has_image"],
-                "processed_at": it["processed_at"],
-            }
 
-        logging.info(f"[fresh] {site}: {len(items)} items")
-        return items
+def fetch_head_og_image(url: str) -> str:
+    """
+    なるべく軽くOG画像を取る。
+    1) HEADでContent-Typeをチェック
+    2) GETで先頭だけ読み、head内のog:imageを探す
+    """
+    if not url:
+        return ""
 
+    try:
+        # まずHEAD
+        r = http_head(url, timeout=DEFAULT_TIMEOUT)
+        ctype = (r.headers.get("Content-Type") or "").lower()
+        # HTMLでない可能性が高いものはやめる
+        if "text/html" not in ctype and "application/xhtml" not in ctype and ctype != "":
+            return ""
+
+    except Exception:
+        # HEAD失敗時はGETへ
+        pass
+
+    # GETで軽く読む（まずはhead周辺だけ）
+    try:
+        r = http_get(url, timeout=DEFAULT_TIMEOUT, stream=True)
+        r.raise_for_status()
+
+        # ドメインによってはheadだけ取れないので最大サイズを設定
+        netloc = domain_of(url)
+        max_bytes = 200_000 if netloc in OG_POSITIVE_DOMAINS else 80_000
+
+        data = b""
+        for chunk in r.iter_content(chunk_size=8192):
+            if not chunk:
+                break
+            data += chunk
+            if len(data) >= max_bytes:
+                break
+
+        # head終端で切る
+        text = data.decode("utf-8", errors="ignore")
+        head_end = text.lower().find("</head>")
+        if head_end != -1:
+            text = text[: head_end + 7]
+
+        soup = BeautifulSoup(text, "html.parser")
+        og = soup.find("meta", property="og:image")
+        if og and og.get("content"):
+            return og.get("content").strip()
+
+    except Exception:
+        return ""
+
+    return ""
+
+
+def clean_html_to_text(s: str) -> str:
+    """
+    description/contentがHTMLの場合に軽く整形（完全に消しすぎない）
+    """
+    if not s:
+        return ""
+    s = safe_text(s)
+    # すでにプレーンっぽいならそのまま
+    if "<" not in s and ">" not in s:
+        return s
+    try:
+        soup = BeautifulSoup(s, "html.parser")
+        # 画像タグ等は削除
+        for t in soup(["img", "script", "style", "noscript"]):
+            t.decompose()
+        text = soup.get_text(separator=" ", strip=True)
+        text = re.sub(r"\s+", " ", text).strip()
+        return text
+    except Exception:
+        # 失敗したら雑にタグ除去
+        s = re.sub(r"<[^>]+>", " ", s)
+        s = re.sub(r"\s+", " ", s).strip()
+        return s
+
+
+# -----------------------------
+# RSS取得＆統合
+# -----------------------------
+def fetch_feed(url: str) -> dict:
+    """
+    1つのRSSを取得してfeedparserで解析した結果を返す。
+    """
+    try:
+        r = http_get(url, timeout=DEFAULT_TIMEOUT)
+        r.raise_for_status()
+        return feedparser.parse(r.content)
     except Exception as e:
-        logging.error(f"Error processing RSS feed {url}: {e}", exc_info=True)
-        return []
+        logging.warning(f"Fetch failed: {url} ({e})")
+        return {"entries": [], "feed": {}}
+
+
+def build_items_from_feed(feed, source_url: str) -> list[dict]:
+    items = []
+    entries = feed.get("entries") or []
+
+    # サイト名（feedタイトル or ドメイン）
+    site = safe_text((feed.get("feed") or {}).get("title") or "") or domain_of(source_url)
+
+    for e in entries:
+        title = safe_text(e.get("title") or "")
+        link = norm_url(e.get("link") or "")
+        pub = parse_date(e)
+
+        # 本文（description/summary）
+        desc = e.get("summary") or e.get("description") or ""
+        desc = clean_html_to_text(desc)
+
+        # content:encodedがあれば優先して保持（RSS出力にも使う）
+        content = ""
+        try:
+            if "content" in e and e.content:
+                # feedparserのcontentはlistの場合がある
+                if isinstance(e.content, list) and len(e.content) > 0:
+                    content = e.content[0].get("value") or ""
+                elif isinstance(e.content, dict):
+                    content = e.content.get("value") or ""
+                else:
+                    content = str(e.content)
+        except Exception:
+            content = ""
+
+        content = clean_html_to_text(content)
+
+        # 画像
+        img = extract_image_from_entry(e)
+        if not img:
+            # OG補完
+            img = fetch_head_og_image(link)
+
+        item = {
+            "site": site,
+            "title": title,
+            "link": link,
+            "pubDate": pub,
+            "description": desc,
+            "content": content,
+            "image": img,
+            "source_url": source_url,
+        }
+
+        items.append(item)
+
+    return items
+
+
+def merge_items(all_items: list[dict]) -> list[dict]:
+    """
+    重複排除して新しい順に。
+    """
+    seen = set()
+    merged = []
+    for it in all_items:
+        key = sha1((it.get("link") or "") + "|" + (it.get("title") or ""))
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(it)
+
+    merged.sort(key=lambda x: x["pubDate"], reverse=True)
+    return merged[:200]
+
 
 def fetch_and_generate_items() -> list[dict]:
     cache = load_cache()
-    all_items: list[dict] = []
+    results = []
 
     with ThreadPoolExecutor(max_workers=12) as ex:
-        futmap = {ex.submit(fetch_single_rss, u, cache): u for u in RSS_URLS}
-        for fut in as_completed(futmap):
-            try:
-                all_items.extend(fut.result())
-            except Exception as e:
-                logging.error(f"Worker error: {e}")
+        futures = {ex.submit(fetch_feed, u): u for u in RSS_URLS}
+        for fut in as_completed(futures):
+            u = futures[fut]
+            feed = fut.result()
+            items = build_items_from_feed(feed, u)
+            results.extend(items)
 
-    cutoff = datetime.now() - timedelta(days=30)
-    to_del = []
-    for link, a in list(cache.get("articles", {}).items()):
-        try:
-            ts = datetime.fromisoformat(a.get("pubDate"))
-            if ts < cutoff:
-                to_del.append(link)
-        except Exception:
-            to_del.append(link)
-    for link in to_del:
-        cache["articles"].pop(link, None)
+            # キャッシュへ結果（成功/失敗含め）保存
+            cache[u] = {
+                "ts": datetime.now(timezone.utc).isoformat(),
+                "count": len(items),
+            }
 
     save_cache(cache)
+    return merge_items(results)
 
-    all_items.sort(key=lambda x: x["pubDate"], reverse=True)
-    return all_items[:200]
 
 # -----------------------------
-# RSS出力
+# RSS出力（XML文字列）
 # -----------------------------
 def generate_rss_xml_string(items: list[dict], base_url: str = "") -> str:
     rss = Element("rss", attrib={"version": "2.0"})
@@ -418,6 +416,56 @@ def generate_rss_xml_string(items: list[dict], base_url: str = "") -> str:
     ElementTree(rss).write(s, encoding="unicode", xml_declaration=True)
     return s.getvalue()
 
+
+# -----------------------------
+# Tasker向け JSON 出力（feed.json / images.json）
+# -----------------------------
+def write_tasker_json(items, outdir="public", max_items=130):
+    """
+    Taskerで扱いやすいように、本文用(feed.json)と画像URL用(images.json)を分けて出力します。
+    - feed.json: title/body/date/link/site を保持（imageは含めない）
+    - images.json: image URLのみ（idで対応）
+    """
+    os.makedirs(outdir, exist_ok=True)
+
+    sliced = items[:max_items]
+    now_iso = datetime.now().astimezone().isoformat()
+
+    feed_items = []
+    image_items = []
+
+    for idx, it in enumerate(sliced, start=1):
+        body = it.get("content") or it.get("description") or ""
+        feed_items.append({
+            "id": idx,
+            "title": it.get("title", ""),
+            "site": it.get("site", ""),
+            "date": (it["pubDate"].astimezone().isoformat() if it.get("pubDate") else ""),
+            "link": it.get("link", ""),
+            "body": body,
+        })
+
+        img = it.get("image")
+        image_items.append({
+            "id": idx,
+            "image": (img if img else None),
+        })
+
+    feed_json = {"updated": now_iso, "count": len(feed_items), "items": feed_items}
+    images_json = {"updated": now_iso, "count": len(image_items), "items": image_items}
+
+    feed_path = os.path.join(outdir, "feed.json")
+    images_path = os.path.join(outdir, "images.json")
+
+    with open(feed_path, "w", encoding="utf-8") as f:
+        json.dump(feed_json, f, ensure_ascii=False, indent=2)
+
+    with open(images_path, "w", encoding="utf-8") as f:
+        json.dump(images_json, f, ensure_ascii=False, indent=2)
+
+    logging.info(f"Tasker JSON successfully generated: {feed_path}, {images_path}")
+
+
 # -----------------------------
 # main
 # -----------------------------
@@ -431,5 +479,8 @@ if __name__ == "__main__":
     outpath = os.path.join(outdir, "rss_output.xml")
     with open(outpath, "w", encoding="utf-8") as f:
         f.write(xml_string)
+
+    # Tasker向け JSON（本文/画像URL）も同時生成
+    write_tasker_json(items, outdir=outdir, max_items=130)
 
     logging.info(f"RSS feed successfully generated: {outpath}")
