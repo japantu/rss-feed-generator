@@ -18,7 +18,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone, timedelta
 from io import StringIO
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 import requests
 import feedparser
@@ -81,25 +81,22 @@ CACHE_FILE = "rss_cache.json"
 register_namespace("dc", "http://purl.org/dc/elements/1.1/")
 register_namespace("content", "http://purl.org/rss/1.0/modules/content/")
 
-
 # -----------------------------
 # 便利関数
 # -----------------------------
+_IMG_EXT_RE = re.compile(r"\.(jpg|jpeg|png|webp|gif)(\?.*)?$", re.I)
+
 def safe_text(s: str) -> str:
     if s is None:
         return ""
-    # HTMLエンティティを復元
     s = html.unescape(str(s))
-    # 変な制御文字を除去
     s = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", s)
     return s.strip()
-
 
 def norm_url(u: str) -> str:
     if not u:
         return ""
     return u.strip()
-
 
 def domain_of(url: str) -> str:
     try:
@@ -107,10 +104,8 @@ def domain_of(url: str) -> str:
     except Exception:
         return ""
 
-
 def sha1(s: str) -> str:
     return hashlib.sha1(s.encode("utf-8", errors="ignore")).hexdigest()
-
 
 def load_cache() -> dict:
     if os.path.exists(CACHE_FILE):
@@ -121,7 +116,6 @@ def load_cache() -> dict:
             return {}
     return {}
 
-
 def save_cache(cache: dict):
     try:
         with open(CACHE_FILE, "w", encoding="utf-8") as f:
@@ -129,13 +123,11 @@ def save_cache(cache: dict):
     except Exception as e:
         logging.warning(f"Failed to save cache: {e}")
 
-
 def http_get(url: str, timeout=DEFAULT_TIMEOUT, headers=None, stream=False):
     h = HEADERS.copy()
     if headers:
         h.update(headers)
     return SESSION.get(url, headers=h, timeout=timeout, stream=stream)
-
 
 def http_head(url: str, timeout=DEFAULT_TIMEOUT, headers=None):
     h = HEADERS.copy()
@@ -143,10 +135,7 @@ def http_head(url: str, timeout=DEFAULT_TIMEOUT, headers=None):
         h.update(headers)
     return SESSION.head(url, headers=h, timeout=timeout, allow_redirects=True)
 
-
 def parse_date(entry) -> datetime:
-    # feedparserが提供するpublished_parsed/updated_parsedを優先
-    # 無い場合は現在時刻
     dt = None
     for key in ("published_parsed", "updated_parsed"):
         if key in entry and entry.get(key):
@@ -161,44 +150,112 @@ def parse_date(entry) -> datetime:
         dt = datetime.now(timezone.utc)
     return dt
 
+def _normalize_img_url(u: str, base: str) -> str:
+    if not u:
+        return ""
+    u = u.strip()
+    if not u:
+        return ""
+    # //example.com/.. を https:// に
+    if u.startswith("//"):
+        u = "https:" + u
+    # 相対URLを絶対化
+    if base and (u.startswith("/") or (not u.startswith("http://") and not u.startswith("https://"))):
+        try:
+            u = urljoin(base, u)
+        except Exception:
+            pass
+    return u
+
+def _first_img_from_html(html_text: str, base: str) -> str:
+    if not html_text:
+        return ""
+    m = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', html_text, re.I)
+    if not m:
+        return ""
+    return _normalize_img_url(m.group(1), base)
 
 def extract_image_from_entry(entry) -> str:
-    # RSSのenclosure / media:content / media_thumbnail / links等から画像URLを拾う
+    """
+    RSSのenclosure / media:content / media_thumbnail / links / summary / content:encoded から画像URLを拾う。
+    livedoor(index.rdf)系は content:encoded にimgが入ることがあるので必ず見る。
+    """
     try:
-        # media_content
+        base = norm_url(entry.get("link") or "")
+
+        # 0) enclosures（feedparserが持ってくることがある）
+        try:
+            if "enclosures" in entry and entry.enclosures:
+                for enc in entry.enclosures:
+                    href = (enc.get("href") or "").strip()
+                    typ = (enc.get("type") or "").lower()
+                    if not href:
+                        continue
+                    if typ.startswith("image/") or _IMG_EXT_RE.search(href):
+                        return _normalize_img_url(href, base)
+        except Exception:
+            pass
+
+        # 1) media_content（typeがimage/*なら拡張子無しでも採用）
         if "media_content" in entry and entry.media_content:
             for mc in entry.media_content:
-                u = mc.get("url") or ""
-                if u and re.search(r"\.(jpg|jpeg|png|webp|gif)(\?.*)?$", u, re.I):
-                    return u
+                u = (mc.get("url") or "").strip()
+                typ = (mc.get("type") or "").lower()
+                if not u:
+                    continue
+                if typ.startswith("image/") or _IMG_EXT_RE.search(u):
+                    return _normalize_img_url(u, base)
+                # typeが無いがURLはある（拡張子無し配信もある）→一旦採用
+                if not typ:
+                    return _normalize_img_url(u, base)
 
-        # media_thumbnail
+        # 2) media_thumbnail
         if "media_thumbnail" in entry and entry.media_thumbnail:
             for mt in entry.media_thumbnail:
-                u = mt.get("url") or ""
-                if u and re.search(r"\.(jpg|jpeg|png|webp|gif)(\?.*)?$", u, re.I):
-                    return u
+                u = (mt.get("url") or "").strip()
+                if u:
+                    return _normalize_img_url(u, base)
 
-        # links（rel=enclosure等）
+        # 3) links（rel=enclosure / type=image/*）
         if "links" in entry and entry.links:
             for lk in entry.links:
-                href = lk.get("href") or ""
+                href = (lk.get("href") or "").strip()
                 rel = (lk.get("rel") or "").lower()
                 typ = (lk.get("type") or "").lower()
-                if rel in ("enclosure", "related") or "image" in typ:
-                    if href and re.search(r"\.(jpg|jpeg|png|webp|gif)(\?.*)?$", href, re.I):
-                        return href
+                if not href:
+                    continue
+                if rel == "enclosure" or "image" in typ:
+                    return _normalize_img_url(href, base)
+                # livedoor等で related になっているケースもある
+                if rel == "related" and ("image" in typ or _IMG_EXT_RE.search(href)):
+                    return _normalize_img_url(href, base)
 
-        # summary/description内のimgタグ
+        # 4) summary/description内のimgタグ
         summary = entry.get("summary") or entry.get("description") or ""
-        if summary:
-            m = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', summary, re.I)
-            if m:
-                return m.group(1)
+        img = _first_img_from_html(summary, base)
+        if img:
+            return img
+
+        # 5) ★追加：content:encoded（entry.content）内のimgタグ
+        try:
+            c = entry.get("content")
+            htmlv = ""
+            if isinstance(c, list) and len(c) > 0:
+                htmlv = c[0].get("value") or ""
+            elif isinstance(c, dict):
+                htmlv = c.get("value") or ""
+            elif c:
+                htmlv = str(c)
+            img = _first_img_from_html(htmlv, base)
+            if img:
+                return img
+        except Exception:
+            pass
+
     except Exception:
         pass
-    return ""
 
+    return ""
 
 def fetch_head_og_image(url: str) -> str:
     """
@@ -210,23 +267,17 @@ def fetch_head_og_image(url: str) -> str:
         return ""
 
     try:
-        # まずHEAD
         r = http_head(url, timeout=DEFAULT_TIMEOUT)
         ctype = (r.headers.get("Content-Type") or "").lower()
-        # HTMLでない可能性が高いものはやめる
         if "text/html" not in ctype and "application/xhtml" not in ctype and ctype != "":
             return ""
-
     except Exception:
-        # HEAD失敗時はGETへ
         pass
 
-    # GETで軽く読む（まずはhead周辺だけ）
     try:
         r = http_get(url, timeout=DEFAULT_TIMEOUT, stream=True)
         r.raise_for_status()
 
-        # ドメインによってはheadだけ取れないので最大サイズを設定
         netloc = domain_of(url)
         max_bytes = 200_000 if netloc in OG_POSITIVE_DOMAINS else 80_000
 
@@ -238,7 +289,6 @@ def fetch_head_og_image(url: str) -> str:
             if len(data) >= max_bytes:
                 break
 
-        # head終端で切る
         text = data.decode("utf-8", errors="ignore")
         head_end = text.lower().find("</head>")
         if head_end != -1:
@@ -254,7 +304,6 @@ def fetch_head_og_image(url: str) -> str:
 
     return ""
 
-
 def clean_html_to_text(s: str) -> str:
     """
     description/contentがHTMLの場合に軽く整形（完全に消しすぎない）
@@ -262,23 +311,19 @@ def clean_html_to_text(s: str) -> str:
     if not s:
         return ""
     s = safe_text(s)
-    # すでにプレーンっぽいならそのまま
     if "<" not in s and ">" not in s:
         return s
     try:
         soup = BeautifulSoup(s, "html.parser")
-        # 画像タグ等は削除
         for t in soup(["img", "script", "style", "noscript"]):
             t.decompose()
         text = soup.get_text(separator=" ", strip=True)
         text = re.sub(r"\s+", " ", text).strip()
         return text
     except Exception:
-        # 失敗したら雑にタグ除去
         s = re.sub(r"<[^>]+>", " ", s)
         s = re.sub(r"\s+", " ", s).strip()
         return s
-
 
 # -----------------------------
 # RSS取得＆統合
@@ -295,12 +340,10 @@ def fetch_feed(url: str) -> dict:
         logging.warning(f"Fetch failed: {url} ({e})")
         return {"entries": [], "feed": {}}
 
-
 def build_items_from_feed(feed, source_url: str) -> list[dict]:
     items = []
     entries = feed.get("entries") or []
 
-    # サイト名（feedタイトル or ドメイン）
     site = safe_text((feed.get("feed") or {}).get("title") or "") or domain_of(source_url)
 
     for e in entries:
@@ -308,15 +351,12 @@ def build_items_from_feed(feed, source_url: str) -> list[dict]:
         link = norm_url(e.get("link") or "")
         pub = parse_date(e)
 
-        # 本文（description/summary）
         desc = e.get("summary") or e.get("description") or ""
         desc = clean_html_to_text(desc)
 
-        # content:encodedがあれば優先して保持（RSS出力にも使う）
         content = ""
         try:
             if "content" in e and e.content:
-                # feedparserのcontentはlistの場合がある
                 if isinstance(e.content, list) and len(e.content) > 0:
                     content = e.content[0].get("value") or ""
                 elif isinstance(e.content, dict):
@@ -328,10 +368,9 @@ def build_items_from_feed(feed, source_url: str) -> list[dict]:
 
         content = clean_html_to_text(content)
 
-        # 画像
+        # 画像（ここは「生のentry」を見るので content:encoded 内の<img>も拾える）
         img = extract_image_from_entry(e)
         if not img:
-            # OG補完
             img = fetch_head_og_image(link)
 
         item = {
@@ -349,7 +388,6 @@ def build_items_from_feed(feed, source_url: str) -> list[dict]:
 
     return items
 
-
 def merge_items(all_items: list[dict]) -> list[dict]:
     """
     重複排除して新しい順に。
@@ -366,7 +404,6 @@ def merge_items(all_items: list[dict]) -> list[dict]:
     merged.sort(key=lambda x: x["pubDate"], reverse=True)
     return merged[:200]
 
-
 def fetch_and_generate_items() -> list[dict]:
     cache = load_cache()
     results = []
@@ -379,7 +416,6 @@ def fetch_and_generate_items() -> list[dict]:
             items = build_items_from_feed(feed, u)
             results.extend(items)
 
-            # キャッシュへ結果（成功/失敗含め）保存
             cache[u] = {
                 "ts": datetime.now(timezone.utc).isoformat(),
                 "count": len(items),
@@ -387,7 +423,6 @@ def fetch_and_generate_items() -> list[dict]:
 
     save_cache(cache)
     return merge_items(results)
-
 
 # -----------------------------
 # RSS出力（XML文字列）
@@ -402,7 +437,6 @@ def generate_rss_xml_string(items: list[dict], base_url: str = "") -> str:
 
     for it in items:
         i = SubElement(ch, "item")
-        # ★ここを復元：タイトルは「サイト名」閂「記事タイトル」
         composed_title = f'{it["site"]}閂{it["title"]}'
         SubElement(i, "title").text = composed_title
         SubElement(i, "link").text = it["link"]
@@ -412,10 +446,16 @@ def generate_rss_xml_string(items: list[dict], base_url: str = "") -> str:
         SubElement(i, "pubDate").text = it["pubDate"].astimezone(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
         SubElement(i, "{http://purl.org/rss/1.0/modules/content/}encoded").text = it["content"] or it["description"]
 
+        # ★画像をRSS側にも復活（KLWP等が画像として認識しやすい）
+        img = (it.get("image") or "").strip()
+        if img:
+            enc = SubElement(i, "enclosure")
+            enc.set("url", img)
+            enc.set("type", "image/jpeg")
+
     s = StringIO()
     ElementTree(rss).write(s, encoding="unicode", xml_declaration=True)
     return s.getvalue()
-
 
 # -----------------------------
 # Tasker向け JSON 出力（feed.json / images.json）
@@ -465,7 +505,6 @@ def write_tasker_json(items, outdir="public", max_items=130):
 
     logging.info(f"Tasker JSON successfully generated: {feed_path}, {images_path}")
 
-
 # -----------------------------
 # main
 # -----------------------------
@@ -484,4 +523,3 @@ if __name__ == "__main__":
     write_tasker_json(items, outdir=outdir, max_items=130)
 
     logging.info(f"RSS feed successfully generated: {outpath}")
-
