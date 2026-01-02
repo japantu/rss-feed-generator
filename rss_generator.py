@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-統合RSSジェネレータ（画像付きRSSを復活 + Tasker向け JSON 出力）
+統合RSSジェネレータ（画像付きRSS + Tasker向け JSON 出力）
 - 複数RSSを並列取得してマージ
 - 画像は RSS内の enclosure/media/img を優先、無い場合のみOG補完
 - livedoor(index.rdf)系の content:encoded 内 <img> も拾う
 - data:image/...;base64 は「画像URLではない」ので除外（rabitsokuhou対策）
 - 出力:
   - public/rss_output.xml   (画像付き: <enclosure> 付与)
-  - public/feed.json        (Tasker向け本文)
-  - public/images.json      (Tasker向け画像URL)
+  - public/feed.json        (Tasker向け: 本文 + 画像URL を1つに統合)
 """
 
 import os
@@ -67,8 +66,8 @@ OG_POSITIVE_DOMAINS = {
 # 出力先
 OUTDIR = "public"
 OUT_RSS = os.path.join(OUTDIR, "rss_output.xml")
-OUT_FEED_JSON = os.path.join(OUTDIR, "feed.json")
-OUT_IMAGES_JSON = os.path.join(OUTDIR, "images.json")
+# JSONは1本だけ（統合版）。ファイル名は既存互換のため feed.json のまま
+OUT_JSON = os.path.join(OUTDIR, "feed.json")
 
 # 件数（Tasker向け）
 TASKER_MAX_ITEMS = 130
@@ -492,7 +491,7 @@ def generate_rss_xml_string(items: list[dict], channel_title: str, channel_link:
 
 
 # -----------------------------
-# Tasker向け JSON 出力（feed.json / images.json）
+# Tasker向け JSON 出力（feed.json 1本に統合）
 # -----------------------------
 def write_tasker_json(items: list[dict], max_items: int = TASKER_MAX_ITEMS):
     os.makedirs(OUTDIR, exist_ok=True)
@@ -500,38 +499,28 @@ def write_tasker_json(items: list[dict], max_items: int = TASKER_MAX_ITEMS):
     sliced = items[:max_items]
     now_iso = datetime.now(timezone.utc).isoformat()
 
-    feed_items = []
-    image_items = []
-
+    merged_items = []
     for idx, it in enumerate(sliced, start=1):
-        feed_items.append({
+        img = norm_url(it.get("image") or "")
+        if img and is_data_image_uri(img):
+            img = ""
+
+        merged_items.append({
             "id": idx,
             "title": it.get("title", ""),
             "site": it.get("site", ""),
             "date": (it["pubDate"].astimezone(timezone.utc).isoformat() if it.get("pubDate") else ""),
             "link": it.get("link", ""),
             "body": it.get("content", "") or it.get("description", "") or "",
-        })
-
-        img = norm_url(it.get("image") or "")
-        if img and is_data_image_uri(img):
-            img = ""
-
-        image_items.append({
-            "id": idx,
             "image": (img if img else None),
         })
 
-    feed_json = {"updated": now_iso, "count": len(feed_items), "items": feed_items}
-    images_json = {"updated": now_iso, "count": len(image_items), "items": image_items}
+    out_json = {"updated": now_iso, "count": len(merged_items), "items": merged_items}
 
-    with open(OUT_FEED_JSON, "w", encoding="utf-8") as f:
-        json.dump(feed_json, f, ensure_ascii=False, indent=2)
+    with open(OUT_JSON, "w", encoding="utf-8") as f:
+        json.dump(out_json, f, ensure_ascii=False, indent=2)
 
-    with open(OUT_IMAGES_JSON, "w", encoding="utf-8") as f:
-        json.dump(images_json, f, ensure_ascii=False, indent=2)
-
-    logging.info(f"Tasker JSON generated: {OUT_FEED_JSON}, {OUT_IMAGES_JSON}")
+    logging.info(f"Tasker JSON generated: {OUT_JSON}")
 
 
 # -----------------------------
@@ -552,5 +541,5 @@ if __name__ == "__main__":
         f.write(rss_xml)
     logging.info(f"RSS generated: {OUT_RSS}")
 
-    # Tasker向けJSON出力
+    # Tasker向けJSON出力（1本）
     write_tasker_json(items, max_items=TASKER_MAX_ITEMS)
