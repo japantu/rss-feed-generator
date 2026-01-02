@@ -70,7 +70,7 @@ OUT_RSS = os.path.join(OUTDIR, "rss_output.xml")
 OUT_JSON = os.path.join(OUTDIR, "feed.json")
 
 # 件数（Tasker向け）
-TASKER_MAX_ITEMS = 130
+TASKER_MAX_ITEMS = 200
 # RSS側は多めでもOK（必要なら調整）
 RSS_MAX_ITEMS = 200
 
@@ -543,3 +543,4 @@ if __name__ == "__main__":
 
     # Tasker向けJSON出力（1本）
     write_tasker_json(items, max_items=TASKER_MAX_ITEMS)
+
