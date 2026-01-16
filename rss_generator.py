@@ -499,21 +499,22 @@ def write_tasker_json(items: list[dict], max_items: int = TASKER_MAX_ITEMS):
     sliced = items[:max_items]
     now_iso = datetime.now(timezone.utc).isoformat()
 
-    merged_items = []
-    for idx, it in enumerate(sliced, start=1):
-        img = norm_url(it.get("image") or "")
-        if img and is_data_image_uri(img):
-            img = ""
-
-        merged_items.append({
-    "item_id": str(idx),   # ← 念のため文字列化
+    merged_items.append({
+    # 既存（そのままでも良いが、KLWPで取れないなら使わない）
     "title": it.get("title", ""),
     "site": it.get("site", ""),
-    "published": (it["pubDate"].astimezone(timezone.utc).isoformat() if it.get("pubDate") else ""),
     "link": it.get("link", ""),
     "body": it.get("content", "") or it.get("description", "") or "",
     "image": (img if img else None),
+
+    # ★KLWPで取りやすい「安全キー」を追加
+    # 1) 数字だけだと誤解釈される可能性があるので、先頭に文字を付ける
+    "num": f"n{idx}",
+
+    # 2) ISO文字列のままでも良いが、念のため先頭に文字を付ける（“日時扱い”を避ける）
+    "pub": ("p" + it["pubDate"].astimezone(timezone.utc).isoformat()) if it.get("pubDate") else "",
 })
+
 
 
     out_json = {"updated": now_iso, "count": len(merged_items), "items": merged_items}
@@ -544,5 +545,6 @@ if __name__ == "__main__":
 
     # Tasker向けJSON出力（1本）
     write_tasker_json(items, max_items=TASKER_MAX_ITEMS)
+
 
 
