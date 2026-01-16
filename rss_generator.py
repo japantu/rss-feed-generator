@@ -506,14 +506,15 @@ def write_tasker_json(items: list[dict], max_items: int = TASKER_MAX_ITEMS):
             img = ""
 
         merged_items.append({
-            "id": idx,
-            "title": it.get("title", ""),
-            "site": it.get("site", ""),
-            "date": (it["pubDate"].astimezone(timezone.utc).isoformat() if it.get("pubDate") else ""),
-            "link": it.get("link", ""),
-            "body": it.get("content", "") or it.get("description", "") or "",
-            "image": (img if img else None),
-        })
+    "item_id": str(idx),   # ← 念のため文字列化
+    "title": it.get("title", ""),
+    "site": it.get("site", ""),
+    "published": (it["pubDate"].astimezone(timezone.utc).isoformat() if it.get("pubDate") else ""),
+    "link": it.get("link", ""),
+    "body": it.get("content", "") or it.get("description", "") or "",
+    "image": (img if img else None),
+})
+
 
     out_json = {"updated": now_iso, "count": len(merged_items), "items": merged_items}
 
@@ -543,4 +544,5 @@ if __name__ == "__main__":
 
     # Tasker向けJSON出力（1本）
     write_tasker_json(items, max_items=TASKER_MAX_ITEMS)
+
 
