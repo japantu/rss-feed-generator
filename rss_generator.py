@@ -396,10 +396,19 @@ def build_items_from_feed(feed, source_url: str) -> list[dict]:
         # テキストが空ならdescriptionをfallback
         body_txt = content_txt or desc_txt
 
-        # 画像抽出（RSS内優先 → 無ければOG）
-        img = extract_image_from_entry(e)
-        if not img:
+        # 画像抽出
+        # 4Gamer / Lifehacker / Gizmodo は記事ページの代表画像(og:image)を優先
+        domain = domain_of(link)
+
+        if domain in OG_POSITIVE_DOMAINS:
             img = fetch_head_og_image(link)
+            if not img:
+                img = extract_image_from_entry(e)
+        else:
+            # その他のサイトは従来どおりRSS内画像を優先
+            img = extract_image_from_entry(e)
+            if not img:
+                img = fetch_head_og_image(link)
 
         item = {
             "site": site,
